@@ -175,16 +175,16 @@ dog_breed_list = pd.read_excel(
     io=directory+r"/dog_breed_type.xlsx",
     sheet_name=r"Breed Type",
     engine="openpyxl"
-)["AnimalType"].values.tolist()
+)["Breed"].values.tolist()
 cat_breed_list = pd.read_excel(
     io=directory+r"/animal_type.xlsx",
     sheet_name=r"cat_breeds",
     engine="openpyxl"
-)["AnimalType"].values.tolist()
+)["Breed"].values.tolist()
 breed_type = pd.DataFrame(
     {
         "AnimalID": [],
-        "BreedType": []
+        "Breed": []
     }
 )
 for i in tqdm(dog_breed_list+cat_breed_list):
@@ -196,20 +196,35 @@ for i in tqdm(dog_breed_list+cat_breed_list):
                     pd.DataFrame(
                         {
                             "AnimalID": [train.loc[j, "AnimalID"]],
-                            "BreedType": [i]
+                            "Breed": [i]
                         }
                     )
                 ],
                 axis=0
             ).reset_index(drop=True)
-for i in breed_type.index:
-    if breed_type.loc[i, "BreedType"] == "Pit Bull":
-        breed_type.loc[i, "BreedType"] = "Bull Terrier"
-    elif breed_type.loc[i, "BreedType"] == "Yorkshire":
-        breed_type.loc[i, "BreedType"] = "Yorkshire Terrier"
-    else:
-        pass
+breed_type.loc[breed_type["Breed"]=="Pit Bull", "Breed"] = "Bull Terrier"
+breed_type.loc[breed_type["Breed"]=="Yorkshire", "Breed"] = "Yorkshire Terrier"
+# for i in breed_type.index:
+#     if breed_type.loc[i, "Breed"] == "Pit Bull":
+#         breed_type.loc[i, "Breed"] = "Bull Terrier"
+#     elif breed_type.loc[i, "Breed"] == "Yorkshire":
+#         breed_type.loc[i, "Breed"] = "Yorkshire Terrier"
+#     else:
+#         pass
 breed_type.drop_duplicates(inplace=True)
+
+breed_type = pd.merge(
+    left=breed_type,
+    right=pd.read_excel(
+        io=directory+r"/dog_breed_type.xlsx",
+        sheet_name=r"Breed Type",
+        engine="openpyxl"
+    ),
+    how="left",
+    left_on="Breed",
+    right_on="Breed"
+)
+breed_type.loc[breed_type["BreedType"]=="Unknown", "BreedType"] = np.NaN
 
 mixed_breed = pd.DataFrame(
     {
