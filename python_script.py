@@ -60,6 +60,7 @@ train = pd.merge(
     right_on=["AgeuponOutcome"]
 )
 
+## exporting main data
 with pd.ExcelWriter(
     path=directory+r"/animal_data.xlsx",
     engine='openpyxl',
@@ -152,6 +153,8 @@ for i in tqdm(coat_pattern_list):
                 ],
                 axis=0
             )
+
+### exporting coat data
 with pd.ExcelWriter(
     path=directory+r"/coat.xlsx",
     engine='openpyxl',
@@ -181,7 +184,7 @@ cat_breed_list = pd.read_excel(
     sheet_name=r"cat_breeds",
     engine="openpyxl"
 )["Breed"].values.tolist()
-breed_type = pd.DataFrame(
+breed = pd.DataFrame(
     {
         "AnimalID": [],
         "Breed": []
@@ -190,9 +193,9 @@ breed_type = pd.DataFrame(
 for i in tqdm(dog_breed_list+cat_breed_list):
     for j in train.index:
         if i in train.loc[j, "Breed"]:
-            breed_type = pd.concat(
+            breed = pd.concat(
                 [
-                    breed_type,
+                    breed,
                     pd.DataFrame(
                         {
                             "AnimalID": [train.loc[j, "AnimalID"]],
@@ -202,19 +205,19 @@ for i in tqdm(dog_breed_list+cat_breed_list):
                 ],
                 axis=0
             ).reset_index(drop=True)
-breed_type.loc[breed_type["Breed"]=="Pit Bull", "Breed"] = "Bull Terrier"
-breed_type.loc[breed_type["Breed"]=="Yorkshire", "Breed"] = "Yorkshire Terrier"
-# for i in breed_type.index:
-#     if breed_type.loc[i, "Breed"] == "Pit Bull":
-#         breed_type.loc[i, "Breed"] = "Bull Terrier"
-#     elif breed_type.loc[i, "Breed"] == "Yorkshire":
-#         breed_type.loc[i, "Breed"] = "Yorkshire Terrier"
-#     else:
-#         pass
-breed_type.drop_duplicates(inplace=True)
+breed.loc[breed["Breed"]=="Pit Bull", "Breed"] = "Bull Terrier"
+breed.loc[breed["Breed"]=="Yorkshire", "Breed"] = "Yorkshire Terrier"
+### removing a case where Chihuahua Shorthair got tagged in both Chihuahua Shorthair & Shorthair. There are no just Shirthair dogs in out data
+breed.drop(
+    breed.loc[((breed["AnimalID"].isin(dogs)) & (breed["Breed"]=="Shorthair")), :].index,
+    inplace=True
+)
+breed.loc[(breed["AnimalID"].isin(cats)) & (breed["Breed"]=="Shorthair"), "Breed"] = "Domestic Shorthair"
 
-breed_type = pd.merge(
-    left=breed_type,
+breed.drop_duplicates(inplace=True)
+
+breed = pd.merge(
+    left=breed,
     right=pd.read_excel(
         io=directory+r"/dog_breed_type.xlsx",
         sheet_name=r"Breed Type",
@@ -224,7 +227,7 @@ breed_type = pd.merge(
     left_on="Breed",
     right_on="Breed"
 )
-breed_type.loc[breed_type["BreedType"]=="Unknown", "BreedType"] = np.NaN
+breed.loc[breed["BreedType"]=="Unknown", "BreedType"] = np.NaN
 
 mixed_breed = pd.DataFrame(
     {
@@ -235,21 +238,52 @@ mixed_breed = pd.DataFrame(
             for i in train.index
         ]
     }
-)
+).dropna()
 temp = pd.DataFrame(
-    data=breed_type['AnimalID'].value_counts()
+    data=breed['AnimalID'].value_counts()
+).reset_index(drop=False).rename(
+    columns={
+        "index": "AnimalID",
+        "AnimalID": "MixType"
+    }
+)
+temp.loc[temp["MixType"] == 2, "MixType"] = "Mix"
+temp.loc[temp["MixType"] == 1, "MixType"] = "Pure breed"
+mixed_breed = pd.concat(
+    [
+        mixed_breed,
+        temp
+    ], axis=0
+).drop_duplicates()
+temp = pd.DataFrame(
+    data=mixed_breed['AnimalID'].value_counts()
 ).reset_index(drop=False).rename(
     columns={
         "index": "AnimalID",
         "AnimalID": "Frequency"
     }
 )
-for i in tqdm(mixed_breed.index):
-    if mixed_breed.loc[i, "AnimalID"] in temp.drop(temp[temp["Frequency"] < 2].index)["AnimalID"].values.tolist():
-        mixed_breed.loc[i, "MixType"] = "Mix"
-    if str(mixed_breed.loc[i, "MixType"]) == "nan":
-        mixed_breed.loc[i, "MixType"] = "Pure breed"
+temp.loc[temp["Frequency"] == 2, "AnimalID"].values.tolist()
+mixed_breed.loc[
+    mixed_breed["AnimalID"].isin(temp.loc[temp["Frequency"] == 2, "AnimalID"].values.tolist()),
+    "MixType"
+] = "Mix"
+mixed_breed.drop_duplicates(inplace=True)
 
+### clubbing a couple of breeds with <15 observations
+temp = pd.DataFrame(
+    data=breed['Breed'].value_counts()
+).reset_index(drop=False).rename(
+    columns={
+        "index": "Breed",
+        "Breed": "Frequency"
+    }
+)
+for i in tqdm(breed.index):
+    if breed.loc[i, "Breed"] in temp.drop(temp[temp["Frequency"] >= 15].index)["Breed"].values.tolist():
+        breed.loc[i, "Breed"] = np.NaN
+
+### exporting breed data
 with pd.ExcelWriter(
     path=directory+r"/breed.xlsx",
     engine='openpyxl',
@@ -257,7 +291,7 @@ with pd.ExcelWriter(
     date_format='DD-MMM-YYYY',
     datetime_format='DD-MMM-YYYY'
 ) as writer:
-    breed_type.to_excel(
+    breed.to_excel(
         excel_writer=writer,
         index=False,
         sheet_name='Breed Type'
