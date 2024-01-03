@@ -4,7 +4,8 @@ import pandas as pd
 from tqdm import tqdm
 
 # folder path
-directory = r"/Users/wrngnfreeman/Library/CloudStorage/OneDrive-Personal/shared_projects/Shelter Animal Outcomes"
+# directory = r"/Users/wrngnfreeman/Library/CloudStorage/OneDrive-Personal/shared_projects/Shelter Animal Outcomes"
+directory = r"C:/Users/shrey/OneDrive/shared_projects/Shelter Animal Outcomes"
 
 # importing datasets
 train = pd.read_csv(
