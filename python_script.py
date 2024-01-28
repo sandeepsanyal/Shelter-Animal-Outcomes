@@ -9,7 +9,7 @@ directory = r"C:/Users/shrey/OneDrive/shared_projects/Shelter Animal Outcomes"
 
 # importing datasets
 train = pd.read_csv(
-    filepath_or_buffer=directory+r"/train.csv",
+    filepath_or_buffer=directory+r"/raw_data/train.csv",
     sep=",",
     usecols=[
         "AnimalID",
@@ -52,7 +52,7 @@ train["SterilizationType"] = [
 train = pd.merge(
     left=train,
     right=pd.read_excel(
-        io=directory+r"/animal_type.xlsx",
+        io=directory+r"/intermediate_data/animal_type.xlsx",
         sheet_name=r"age_group",
         engine="openpyxl"
     ),
@@ -63,7 +63,7 @@ train = pd.merge(
 
 ## exporting main data
 with pd.ExcelWriter(
-    path=directory+r"/animal_data.xlsx",
+    path=directory+r"/intermediate_data/animal_data.xlsx",
     engine='openpyxl',
     mode='w',
     date_format='DD-MMM-YYYY',
@@ -87,13 +87,13 @@ with pd.ExcelWriter(
 
 ## Color
 color_list = pd.read_excel(
-    io=directory+r"/animal_type.xlsx",
+    io=directory+r"/intermediate_data/animal_type.xlsx",
     sheet_name=r"color",
     engine="openpyxl"
 )["Color"].values.tolist()
 coat_pattern_list = [
     i for i in pd.read_excel(
-        io=directory+r"/animal_type.xlsx",
+        io=directory+r"/intermediate_data/animal_type.xlsx",
         sheet_name=r"color",
         engine="openpyxl"
     )["Coat pattern"].values.tolist() if str(i) != 'nan'
@@ -157,7 +157,7 @@ for i in tqdm(coat_pattern_list):
 
 ### exporting coat data
 with pd.ExcelWriter(
-    path=directory+r"/coat.xlsx",
+    path=directory+r"/intermediate_data/coat.xlsx",
     engine='openpyxl',
     mode='w',
     date_format='DD-MMM-YYYY',
@@ -176,12 +176,12 @@ with pd.ExcelWriter(
 
 ## Breed
 dog_breed_list = pd.read_excel(
-    io=directory+r"/dog_breed_type.xlsx",
+    io=directory+r"/intermediate_data/dog_breed_type.xlsx",
     sheet_name=r"Breed Type",
     engine="openpyxl"
 )["Breed"].values.tolist()
 cat_breed_list = pd.read_excel(
-    io=directory+r"/animal_type.xlsx",
+    io=directory+r"/intermediate_data/animal_type.xlsx",
     sheet_name=r"cat_breeds",
     engine="openpyxl"
 )["Breed"].values.tolist()
@@ -220,7 +220,7 @@ breed.drop_duplicates(inplace=True)
 breed = pd.merge(
     left=breed,
     right=pd.read_excel(
-        io=directory+r"/dog_breed_type.xlsx",
+        io=directory+r"/intermediate_data/dog_breed_type.xlsx",
         sheet_name=r"Breed Type",
         engine="openpyxl"
     ),
@@ -286,7 +286,7 @@ for i in tqdm(breed.index):
 
 ### exporting breed data
 with pd.ExcelWriter(
-    path=directory+r"/breed.xlsx",
+    path=directory+r"/intermediate_data/breed.xlsx",
     engine='openpyxl',
     mode='w',
     date_format='DD-MMM-YYYY',
