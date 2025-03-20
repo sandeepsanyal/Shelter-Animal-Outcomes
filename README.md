@@ -1,7 +1,11 @@
-The project:
-https://www.kaggle.com/c/shelter-animal-outcomes
+<h1>Animal Shelter Outcome Prediction</h1>
+<h2>The project</h2>
+<a href="https://www.kaggle.com/c/shelter-animal-outcomes">https://www.kaggle.com/c/shelter-animal-outcomes</a>
 
-The training data set:
+<h2>Ojbective</h2>
+This project aims to predict the outcome type of pets in an animal shelter based on various features such as animal type, age, breed, and color. The outcome type is a categorical variable with five levels.
+
+<h2>The training data set</h2>
 To get the data click <a href="https://www.kaggle.com/c/shelter-animal-outcomes/data">here</a> and sign up at kaggle.com.
 
 <p>Here's what the first few rows of the training set look like:</p>
@@ -84,11 +88,8 @@ To get the data click <a href="https://www.kaggle.com/c/shelter-animal-outcomes/
   </tbody>
 </table>
 
-# Animal Shelter Outcome Prediction
 
-This project aims to predict the outcome type of pets in an animal shelter based on various features such as animal type, age, breed, and color. The outcome type is a categorical variable with five levels.
-
-## Project Structure
+<h2>Project Structure</h2>
 
 ```
 animal_shelter_outcome_prediction
@@ -111,15 +112,15 @@ animal_shelter_outcome_prediction
 └── README.md                 # Documentation for the project
 ```
 
-## Setup Instructions
-
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   cd animal_shelter_outcome_prediction
-   ```
-
-2. Install the required packages:
-   ```
-   pip install -r requirements.txt
-   ```
+<h2>Setup Instructions</h2>
+<ol type="1">
+  <l1>Clone the repository:<br>
+    <code>
+      git clone <a href=https://github.com/sandeepsanyal/Shelter-Animal-Outcomes-by-kaggle.com.git>https://github.com/sandeepsanyal/Shelter-Animal-Outcomes-by-kaggle.com.git</a><br>
+      cd animal_shelter_outcome_prediction<br>
+    </code>
+  </li>
+  <l1>Install the required packages:<br>
+    <code>pip install -r requirements.txt</code>
+  </li>
+</ol>
