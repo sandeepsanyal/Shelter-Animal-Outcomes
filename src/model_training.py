@@ -1,9 +1,13 @@
+import time
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 import pandas as pd
 import joblib
-import sys
+
+import utils
+import data_processing
+import feature_engineering
 
 
 def train_model(
@@ -31,7 +35,6 @@ def train_model(
     RandomForestClassifier: The trained Random Forest classifier model.
     
     Workflow Overview:
-
     1. Append `codes_folder_path` to `sys.path` to ensure custom modules are accessible.
     2. Import necessary modules for data processing and feature engineering from the specified path.
     3. Load and preprocess the dataset using the `process_data` function.
@@ -54,23 +57,24 @@ def train_model(
           compatible functions as used within this method.
     """
 
-    sys.path.append(home_dir + r"/src")
-    import data_processing, feature_engineering
-
     # Load and process training data
+    start_time = time.time()
     processed_df = data_processing.process_data(
         home_dir=home_dir,
         data_file=data_file,
         AnimalID=r"AnimalID",
         dep_var=r"OutcomeType"
     )
+    print("Data loaded in: {}".format(utils.calculate_elapsed_time(start_time)))
 
     # Engineer features
+    start_time = time.time()
     engineered_df = feature_engineering.engineer_features(
         df=processed_df,
         AnimalID=r"AnimalID",
         dep_var=r"OutcomeType"
     )
+    print("Features engineered in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     # Preprocess the data (this should be done in the data_processing module)
@@ -82,6 +86,7 @@ def train_model(
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Initialize the model
+    start_time = time.time()
     model = RandomForestClassifier(random_state=42)
 
     # Train the model
@@ -104,5 +109,8 @@ def train_model(
     # Save the trained model
     if export_model_path:
         joblib.dump(model, export_model_path)
+    
+    print("Random Forest Model built in: {}".format(utils.calculate_elapsed_time(start_time)))
 
     return model
+

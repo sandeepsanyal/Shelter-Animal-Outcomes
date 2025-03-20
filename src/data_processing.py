@@ -1,6 +1,10 @@
+import time
+from functools import reduce
 import numpy as np
 import pandas as pd
 import re
+
+import utils
 
 def load_data(
     home_dir: str,
@@ -39,6 +43,7 @@ def load_data(
     """
 
     data = pd.read_csv(home_dir + r"/data/" + data_file + r".csv")
+    data.drop_duplicates(ignore_index=True, inplace=True)
 
 
     return data
@@ -201,6 +206,7 @@ def process_breed_data(
       before recombining them. This is particularly useful for accurate breed categorization.
     """
 
+    # For dog breeds
     dog_breed_group_dict = {
         "Herding": ["Australian Cattle Dog", "Australian Shepherd", "Bearded Collie", "Beauceron", "Belgian Malinois", "Belgian Sheepdog", "Belgian Tervuren", "Black", "Black Mouth Cur", "Blue Lacy", "Border Collie", "Cardigan Welsh Corgi", "Catahoula", "Collie Rough", "Collie Smooth", "English Shepherd", "Entlebucher", "German Shepherd", "Old English Sheepdog", "Pembroke Welsh Corgi", "Picardy Sheepdog", "Queensland Heeler", "Shetland Sheepdog", "Spanish Water Dog", "Swedish Vallhund"],
         "Hound": ["Afghan Hound", "American Foxhound", "Basenji", "Basset Hound", "Beagle", "Bloodhound", "Bluetick Hound", "Borzoi", "Dachshund", "Dachshund Longhair", "Dachshund Wirehair", "English Coonhound", "English Foxhound", "Greyhound", "Harrier", "Ibizan Hound", "Irish Wolfhound", "Norwegian Elkhound", "Otterhound", "Pbgv", "Pharaoh Hound", "Plott Hound", "Podengo Pequeno", "Redbone Hound", "Rhod Ridgeback"],
@@ -243,53 +249,48 @@ def process_breed_data(
         right_index=True,
         how='left'
     ).reset_index(drop=True)
+    breed.drop_duplicates(ignore_index=True, inplace=True)
     del breed_list
 
     reverse_breed_group_map = {}
     for group, breeds in dog_breed_group_dict.items():
         for b in breeds:
             reverse_breed_group_map[b] = group
-
     breed['BreedType'] = breed['Breed_broken'].apply(lambda x: reverse_breed_group_map.get(x, 'Unknown'))
+    breed.drop(columns=['Breed_broken'], inplace=True)
+    breed.drop_duplicates(ignore_index=True, inplace=True)
 
-    # calculate frequency of each AnimalID in breed data
-    breed_freq = breed[AnimalID].value_counts().reset_index().sort_values("count", ascending=False).reset_index(drop=True)
 
-    for animal in df[AnimalID].unique():
-        # Get the count of breeds for the current animal.
-        counts = breed_freq.loc[breed_freq[AnimalID] == animal, 'count']
-        
-        if not counts.empty:
-            # Case when there is more than one breed
-            if counts.values[0] > 1:
-                df.loc[df[AnimalID] == animal, 'Mix'] = 'Mix'
-            
-            # Case when the count is exactly 1
-            elif counts.values[0] == 1:
-                # Check if 'Breed' column has NaN values for this AnimalID.
-                breed_info = df.loc[df[AnimalID] == animal, 'Breed']
-                
-                if pd.isna(breed_info).any():
-                    df.loc[df[AnimalID] == animal, 'Mix'] = np.nan
-                else:
-                    # Check if 'Mix' column is NaN before assigning 'Pure breed'.
-                    if df.loc[df[AnimalID] == animal, 'Mix'].isna().any():
-                        df.loc[df[AnimalID] == animal, 'Mix'] = 'Pure breed'
-            
-            else:
-                # Case when there is no entry in breed_freq for this AnimalID.
-                if df.loc[df[AnimalID] == animal, 'Mix'].isna().any():
-                    df.loc[df[AnimalID] == animal, 'Mix'] = np.nan
-        
-        # Default case (may not be needed with specific conditions)
-        else:
-            df.loc[df[AnimalID] == animal, 'Mix'] = 'Mix'
-
+    # For breed mix
+    ## Calculate frequency of each AnimalID in breed data
+    breed_freq = breed[AnimalID].value_counts().reset_index(name='count')
+    ## Merge the frequency counts back into the original dataframe
+    df = pd.merge(
+        left=df,
+        right=breed_freq,
+        left_on=AnimalID,
+        right_on=AnimalID,
+        how='left'
+    )
+    ## Assign 'Mix' where there are multiple breeds for an AnimalID
+    df.loc[df['count'] > 1, 'Mix'] = 'Mix'
+    ## Assign 'Pure breed' or keep NaN based on the presence of a Breed entry
+    df.loc[
+        (df['count'] == 1) & df['Breed'].notna(),
+        'Mix'
+    ] = 'Pure breed'
+    ## Clean up by dropping the auxiliary frequency column
+    df.drop(columns=['count'], inplace=True)
     del breed_freq
 
-    breed = breed.drop(columns=['Breed_broken', 'Mix'])
+    breed.drop(columns=['Mix'], inplace=True)
+    # Adding cat breed as well
     breed["BreedType"] = [breed.loc[i, "Breed"] if pd.isna(breed.loc[i, "BreedType"]) else breed.loc[i, "BreedType"] for i in range(breed.shape[0])]
+    breed.drop_duplicates(ignore_index=True, inplace=True)
+
     breed_mix = df[[AnimalID, "Breed", "Mix"]]
+    breed_mix = breed_mix.loc[:, :]  # Ensures you have the original DataFrame
+    breed_mix.drop_duplicates(ignore_index=True, inplace=True)
 
 
     return df, breed, breed_mix
@@ -424,9 +425,9 @@ def process_coat_colors(
         left_on=AnimalID,
         right_on=AnimalID,
         how='left'
-    )
+    ).drop_duplicates(ignore_index=True)
 
-    coat_patterns = coatcolor[[AnimalID, 'Color', 'CoatPattern']]
+    coat_patterns = coatcolor[[AnimalID, 'Color', 'CoatPattern']].drop_duplicates(ignore_index=True)
 
     ## Seperate the 'Color' column by '/' and create multiple rows for each breed
     coatcolor_list = coat_color['CoatColor'].str.split('/')
@@ -438,7 +439,7 @@ def process_coat_colors(
         left_index=True,
         right_index=True,
         how='left'
-    ).reset_index(drop=True)
+    ).drop_duplicates(ignore_index=True)
 
 
     return df, coat_color, coat_patterns
@@ -493,66 +494,204 @@ def preprocess_data(
       `process_breed_data`, and `process_coat_colors` are defined elsewhere in your codebase.
     """
 
-    # Age of animals
-    df['AgeuponOutcome'] = df['AgeuponOutcome'].str.replace('  ', ' ')
+    # Sort data by AnimalID and DateTime
+    df.sort_values(
+        by=[
+            AnimalID,
+            "DateTime"
+        ],
+        ascending=[
+            True,
+            True
+        ],
+        ignore_index=True,
+        inplace=True
+    )
 
-    # Apply the conversion function to each entry in the 'AgeuponOutcome' column
+    # Age of animals
+    start_time = time.time()
+    df['AgeuponOutcome'] = df['AgeuponOutcome'].str.replace('  ', ' ')
+    ## Convert age to days
     df['AgeuponOutcome'] = df['AgeuponOutcome'].apply(convert_to_days)
+    ## Group ages into categories
     df['AgeuponOutcome'] = df['AgeuponOutcome'].apply(group_age)
+    print("Age information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     # Sex of animals
-    # remove multiple spaces
+    start_time = time.time()
+    ## remove multiple spaces
     df['SexuponOutcome'] = df['SexuponOutcome'].str.replace('  ', ' ')
-    # replace 'Unknown' with NaN
+    ## replace 'Unknown' with NaN
     df['SexuponOutcome'] = df['SexuponOutcome'].str.replace(r'unknown', '', regex=True, flags=re.IGNORECASE).str.strip().replace('', np.nan)
-    # split the column into two columns
+    ## split the column into two columns
     df['Sterilization'] = df['SexuponOutcome'].str.split(' ').str[0]
     df['SexuponOutcome'] = df['SexuponOutcome'].str.split(' ').str[1]
-    # combine "Spayed" and "Neutered" into "Sterilized"
+    ## combine "Spayed" and "Neutered" into "Sterilized"
     df['Sterilization'] = df['Sterilization'].replace({'Spayed': 'Sterilized', 'Neutered': 'Sterilized'})
+    print("Sex information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     # Breed of animals
+    start_time = time.time()
     df, breed, breed_mix = process_breed_data(df, AnimalID=AnimalID)
+    print("Breed information processed in: {}".format(utils.calculate_elapsed_time(start_time)))    
 
 
     # Coat of animals
+    start_time = time.time()
     df, coat_color, coat_patterns = process_coat_colors(df, AnimalID=AnimalID)
+    print("Coat information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     if dep_var in df.columns:
-        animal_data = df[[AnimalID, dep_var, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']]
+        animal_data = df[[AnimalID, dep_var, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']].drop_duplicates(ignore_index=True)
     else:
-        animal_data = df[[AnimalID, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']]
+        animal_data = df[[AnimalID, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']].drop_duplicates(ignore_index=True)
 
 
-    # Merge all the dataframes
-    df = pd.merge(
-        left=animal_data,
-        right=pd.merge(
-            left=pd.merge(
-                left=breed.drop(columns='Breed'),
-                right=breed_mix.drop(columns='Breed'),
-                left_on=AnimalID,
-                right_on=AnimalID,
-                how='left'
-            ),
-            right=pd.merge(
-                left=coat_color.drop(columns='Color'),
-                right=coat_patterns.drop(columns='Color'),
-                left_on=AnimalID,
-                right_on=AnimalID,
-                how='left'
-            ),
-            left_on=AnimalID,
-            right_on=AnimalID,
-            how='outer'
-        ),
+    # # Merge all the dataframes
+    # df = pd.merge(  # merge animal data with the breed and color related information
+    #     left=animal_data,
+    #     right=pd.merge(
+    #         left=pd.merge(  # merge breed and breed mix
+    #             left=breed.drop(columns='Breed'),
+    #             right=breed_mix.drop(columns='Breed'),
+    #             left_on=AnimalID,
+    #             right_on=AnimalID,
+    #             how='left'
+    #         ),
+    #         right=pd.merge(  # merge coat color and coat patterns
+    #             left=coat_color.drop(columns='Color'),
+    #             right=coat_patterns.drop(columns='Color'),
+    #             left_on=AnimalID,
+    #             right_on=AnimalID,
+    #             how='left'
+    #         ),
+    #         left_on=AnimalID,
+    #         right_on=AnimalID,
+    #         how='outer'
+    #     ),
+    #     left_on=AnimalID,
+    #     right_on=AnimalID,
+    #     how='left'
+    # )
+
+
+    breed_info = pd.merge(  # merge breed and breed mix
+        left=breed.drop(columns='Breed'),
+        right=breed_mix.drop(columns='Breed'),
         left_on=AnimalID,
         right_on=AnimalID,
         how='left'
     )
+    coat_info = pd.merge(  # merge coat color and coat patterns
+        left=coat_color.drop(columns='Color'),
+        right=coat_patterns.drop(columns='Color'),
+        left_on=AnimalID,
+        right_on=AnimalID,
+        how='left'
+    )
+    breed_coat_info = pd.merge(
+        left=breed_info,
+        right=coat_info,
+        left_on=AnimalID,
+        right_on=AnimalID,
+        how='outer'
+    )
+
+    merged_df = pd.merge(
+        left=animal_data,
+        right=breed_coat_info,
+        left_on=AnimalID,
+        right_on=AnimalID,
+        how='left'
+    )
+
+
+
+    merged_df = pd.DataFrame()
+
+    # Process animal_data in chunks
+    for start_row in range(0, len(animal_data), chunk_size):
+        end_row = min(start_row + chunk_size, len(animal_data))
+        
+        # Extract a chunk of animal_data
+        animal_chunk = animal_data.iloc[start_row:end_row]
+
+        # Perform the merges using reduce within the current chunk
+        merged_chunk = pd.merge(  # merge coat color and coat patterns
+            left=animal_chunk,
+            right=breed_coat_info,
+            left_on=AnimalID,
+            right_on=AnimalID,
+            how='left'
+        )
+
+        # Append the processed chunk to the final DataFrame
+        merged_df = pd.concat([merged_df, merged_chunk], ignore_index=True)
+
+
+
+
+    def merge_in_batches(animal_data, breed, breed_mix, coat_color, coat_patterns, chunk_size=10000):
+
+        # Create an empty DataFrame to store the final merged result
+        merged_df = pd.DataFrame()
+
+        # Process animal_data in chunks
+        for start_row in range(0, len(animal_data), chunk_size):
+            end_row = min(start_row + chunk_size, len(animal_data))
+            
+            # Extract a chunk of animal_data
+            animal_chunk = animal_data.iloc[start_row:end_row]
+
+            # List of dataframes to merge with the current chunk
+            dfs_to_merge = [
+                animal_chunk,
+                breed.drop(columns='Breed'),
+                breed_mix.drop(columns='Breed'),
+                coat_color.drop(columns='Color'),
+                coat_patterns.drop(columns='Color')
+            ]
+
+            # Perform the merges using reduce within the current chunk
+            merged_chunk = reduce(lambda left, right: pd.merge(
+                left, 
+                right, 
+                on='AnimalID',  # Assuming 'AnimalID' is a common column for merging
+                how='left'
+            ), dfs_to_merge)
+
+            # Append the processed chunk to the final DataFrame
+            merged_df = pd.concat([merged_df, merged_chunk], ignore_index=True)
+        
+        return merged_df
+
+    # Usage
+    start_time = time.time()
+    df = merge_in_batches(animal_data, breed, breed_mix, coat_color, coat_patterns, chunk_size=10000)
+    print("All data merged in: {}".format(utils.calculate_elapsed_time(start_time)))
+
+
+
+
+    # # List of dataframes to merge
+    # dfs_to_merge = [
+    #     animal_data,
+    #     breed.drop(columns='Breed'),
+    #     breed_mix.drop(columns='Breed'),
+    #     coat_color.drop(columns='Color'),
+    #     coat_patterns.drop(columns='Color')
+    # ]
+
+    # # Perform the merges using reduce
+    # df = reduce(lambda left, right: pd.merge(
+    #     left, 
+    #     right, 
+    #     on=AnimalID if 'AnimalID' in right.columns else None,  # Use 'on' when possible
+    #     how='left'  # Adjust merge type as needed
+    # ), dfs_to_merge)
 
 
     return (df, animal_data, breed, breed_mix, coat_color, coat_patterns)
@@ -599,7 +738,9 @@ def process_data(
     df = load_data(home_dir=home_dir, data_file=data_file)
     
     # Preprocess the loaded DataFrame
+    start_time = time.time()
     df = preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)[0]
+    print("Data preprocessed in: {}".format(utils.calculate_elapsed_time(start_time)))
     
     
     return df

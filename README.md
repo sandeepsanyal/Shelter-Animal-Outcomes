@@ -24,7 +24,7 @@ Here's what the first few rows of the training set look like:
 ```
 animal_shelter_outcome_prediction
 ├── data
-│   ├── test.csv          # Test dataset with animal information
+│   ├── test.csv          # Dataset to predict on. Does not contain dependent variable.
 │   ├── train.csv         # Training dataset containing both animal information and outcome types
 │   └── sample_submission.csv  # Sample submission file format for model predictions
 ├── notebooks
