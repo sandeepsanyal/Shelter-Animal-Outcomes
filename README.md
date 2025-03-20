@@ -107,7 +107,6 @@ animal_shelter_outcome_prediction
 │   │   ├── test_feature_engineering.py  # Unit tests for feature engineering functions
 │   │   ├── test_model_training.py  # Unit tests for model training functions
 │   ├── model_prediction.py   # Functions for making predictions on new datasets
-│   ├── utils.py              # Utility functions used across different modules
 ├── requirements.txt          # Required Python packages and their versions
 └── README.md                 # Documentation for the project
 ```
