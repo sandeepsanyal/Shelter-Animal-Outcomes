@@ -1,6 +1,6 @@
 import pandas as pd
 
-def encode_categorical_variables(df):
+def encode_categorical_variables(df: pd.DataFrame) -> pd.DataFrame:
     """
     Encodes categorical variables in a DataFrame into numeric and dummy-encoded formats.
 
@@ -81,7 +81,11 @@ def encode_categorical_variables(df):
     return df
 
 
-def select_features(df, AnimalID="AnimalID", dep_var='OutcomeType'):
+def select_features(
+    df: pd.DataFrame,
+    AnimalID: str=r"AnimalID",
+    dep_var: str=r"OutcomeType"
+) -> pd.DataFrame:
     """
     Selects relevant features from a DataFrame for model training.
 
@@ -98,7 +102,6 @@ def select_features(df, AnimalID="AnimalID", dep_var='OutcomeType'):
     pandas.DataFrame: A DataFrame containing only the selected features, excluding non-relevant columns.
 
     Process Overview:
-
     1. Identifies and excludes columns that are not relevant for model training, including the identifier, 
        dependent variable, and other specified metadata such as 'Name', 'DateTime', 'SexuponOutcome', 'Sterilization',
        and 'Mix'.
@@ -122,7 +125,11 @@ def select_features(df, AnimalID="AnimalID", dep_var='OutcomeType'):
     return df
 
 
-def engineer_features(df, AnimalID="AnimalID", dep_var='OutcomeType'):
+def engineer_features(
+    df: pd.DataFrame,
+    AnimalID: str=r"AnimalID",
+    dep_var: str=r"OutcomeType"
+) -> pd.DataFrame:
     """
     Engineers and selects features from a DataFrame for machine learning model preparation.
 

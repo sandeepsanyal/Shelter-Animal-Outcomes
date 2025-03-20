@@ -2,23 +2,50 @@ import numpy as np
 import pandas as pd
 import re
 
-def load_data(file_path):
+def load_data(
+    home_dir: str,
+    data_file: str
+) -> pd.DataFrame:
     """
-    Load the dataset from a CSV file.
-    
+    Load a dataset from a CSV file located in the specified directory.
+
+    This function constructs the full path to a CSV file using the provided 
+    home directory and data file name. It then reads the CSV into a pandas 
+    DataFrame and returns it for further processing or analysis.
+
     Parameters:
-    file_path (str): The path to the CSV file.
-    
+    home_dir (str): The base directory where the `data` subdirectory is located.
+                    This should be an absolute or relative path to ensure proper 
+                    navigation within the filesystem.
+    data_file (str): The name of the CSV file to load, excluding the `.csv` extension.
+                     It assumes that the actual file has a `.csv` extension appended.
+
     Returns:
-    pd.DataFrame: The loaded dataset as a pandas DataFrame.
+    pd.DataFrame: A pandas DataFrame containing the contents of the loaded CSV file.
+
+    Raises:
+    FileNotFoundError: If the specified CSV file does not exist at the constructed path.
+    pd.errors.EmptyDataError: If the file is empty.
+    pd.errors.ParserError: If there are issues parsing the file as a CSV.
+
+    Example Usage:
+        data_frame = load_data('/path/to/home', 'dataset_name')
+
+    Notes:
+    - Ensure that the `home_dir` leads to an existing directory and contains 
+      a subdirectory named `data`.
+    - The function assumes that files have no spaces in their names other than
+      those explicitly included as part of `data_file`.
     """
 
-    data = pd.read_csv(file_path)
+    data = pd.read_csv(home_dir + r"/data/" + data_file + r".csv")
+
+
     return data
 
 
 # Function to convert age terms into days
-def convert_to_days(age_str):
+def convert_to_days(age_str) -> int:
     """
     Converts an age string with specified units into the equivalent number of days.
 
@@ -79,7 +106,7 @@ def convert_to_days(age_str):
 
 
 # Group 'AgeuponOutcome' into categories based on the number of days as follows:
-def group_age(age):
+def group_age(age) -> str:
     """
     Categorizes an age into predefined groups based on its value.
 
@@ -135,7 +162,10 @@ def group_age(age):
         return '15+ years'
 
 
-def process_breed_data(df, AnimalID="AnimalID"):
+def process_breed_data(
+    df: pd.DataFrame,
+    AnimalID: str=r"AnimalID"
+) -> tuple:
     """
     Processes and standardizes breed data from an animal dataset.
 
@@ -265,7 +295,7 @@ def process_breed_data(df, AnimalID="AnimalID"):
     return df, breed, breed_mix
     
 
-def replace_colors(row):
+def replace_colors(row: pd.Series) -> str:
     """
     Modify color names based on predefined rules and mappings.
 
@@ -306,7 +336,10 @@ def replace_colors(row):
     return row['Color']
 
 
-def extract_coat_pattern(color_str, coat_patterns):
+def extract_coat_pattern(
+    color_str: str,
+    coat_patterns: str
+) -> str:
     """
     Extracts and returns the coat pattern from a given color string.
 
@@ -331,7 +364,10 @@ def extract_coat_pattern(color_str, coat_patterns):
     return np.nan
 
 
-def process_coat_colors(df, AnimalID="AnimalID"):
+def process_coat_colors(
+    df: pd.DataFrame,
+    AnimalID="AnimalID"
+) -> tuple:
     """
     Processes the coat color and pattern information from animal data.
 
@@ -408,7 +444,11 @@ def process_coat_colors(df, AnimalID="AnimalID"):
     return df, coat_color, coat_patterns
 
 
-def preprocess_data(df, AnimalID="AnimalID", dep_var="OutcomeType"):
+def preprocess_data(
+    df: pd.DataFrame,
+    AnimalID="AnimalID",
+    dep_var="OutcomeType"
+) -> tuple:
     """
     Preprocesses animal data to clean and organize key attributes.
 
@@ -518,7 +558,12 @@ def preprocess_data(df, AnimalID="AnimalID", dep_var="OutcomeType"):
     return (df, animal_data, breed, breed_mix, coat_color, coat_patterns)
 
 
-def process_data(file_path, AnimalID="AnimalID", dep_var="OutcomeType"):
+def process_data(
+    home_dir: str,
+    data_file: str,
+    AnimalID="AnimalID",
+    dep_var="OutcomeType"
+) -> pd.DataFrame:
     """
     Processes data from a specified file path by loading, preprocessing, 
     and encoding categorical variables in sequence to prepare it for analysis or modeling.
@@ -532,11 +577,15 @@ def process_data(file_path, AnimalID="AnimalID", dep_var="OutcomeType"):
        variables where appropriate.
 
     Parameters:
-    - file_path (str): The path to the CSV file containing the data to be processed.
+    - home_dir (str): The base directory where the `data` subdirectory is located.
+                      This should be an absolute or relative path to ensure proper 
+                      navigation within the filesystem.
+    - data_file (str): The name of the CSV file to load, excluding the `.csv` extension.
+                       It assumes that the actual file has a `.csv` extension appended.
     - AnimalID (str, optional): The name of the column in the DataFrame used as an identifier
-      for individual animals. Defaults to "AnimalID".
+                                for individual animals. Defaults to "AnimalID".
     - dep_var (str, optional): The name of the dependent variable column, which is the target
-      for prediction. Defaults to 'OutcomeType'.
+                               for prediction. Defaults to 'OutcomeType'.
 
     Returns:
     pandas.DataFrame: A processed DataFrame with loaded data that has been preprocessed and 
@@ -547,7 +596,7 @@ def process_data(file_path, AnimalID="AnimalID", dep_var="OutcomeType"):
     """
 
     # Load data from the specified file path
-    df = load_data(file_path)
+    df = load_data(home_dir=home_dir, data_file=data_file)
     
     # Preprocess the loaded DataFrame
     df = preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)[0]

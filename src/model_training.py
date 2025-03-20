@@ -7,12 +7,12 @@ import sys
 
 
 def train_model(
-        file_path: str,
-        code_modules_path: str,
-        AnimalID: str=r"AnimalID",
-        dep_var: str=r"OutcomeType",
-        export_model_path: str=False
-    ):
+    home_dir: str,
+    data_file: str,
+    AnimalID: str=r"AnimalID",
+    dep_var: str=r"OutcomeType",
+    export_model_path: str=False
+) -> RandomForestClassifier:
     """
     Trains a Random Forest model using data processed and feature-engineered from the provided dataset.
 
@@ -54,12 +54,13 @@ def train_model(
           compatible functions as used within this method.
     """
 
-    sys.path.append(code_modules_path)
+    sys.path.append(home_dir + r"/src")
     import data_processing, feature_engineering
 
     # Load and process training data
     processed_df = data_processing.process_data(
-        file_path=file_path,
+        home_dir=home_dir,
+        data_file=data_file,
         AnimalID=r"AnimalID",
         dep_var=r"OutcomeType"
     )
