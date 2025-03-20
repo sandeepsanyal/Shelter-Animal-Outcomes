@@ -114,13 +114,13 @@ animal_shelter_outcome_prediction
 
 <h2>Setup Instructions</h2>
 <ol type="1">
-  <l1>Clone the repository:<br>
-    <code>
-      git clone <a href=https://github.com/sandeepsanyal/Shelter-Animal-Outcomes-by-kaggle.com.git>https://github.com/sandeepsanyal/Shelter-Animal-Outcomes-by-kaggle.com.git</a><br>
-      cd animal_shelter_outcome_prediction<br>
-    </code>
+  <li>
+    Clone the repository and navigate to the directory:
+    <pre><code class="language-bash">git clone https://github.com/sandeepsanyal/Shelter-Animal-Outcomes-by-kaggle.com.git
+cd Shelter-Animal-Outcomes-by-kaggle.com</code></pre>
   </li>
-  <l1>Install the required packages:<br>
-    <code>pip install -r requirements.txt</code>
+  <li>
+    Install the required packages:
+    <pre><code>pip install -r requirements.txt</code></pre>
   </li>
 </ol>
