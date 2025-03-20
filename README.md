@@ -84,4 +84,42 @@ To get the data click <a href="https://www.kaggle.com/c/shelter-animal-outcomes/
   </tbody>
 </table>
 
-To predict the outcome of the animal as they leave the Animal Center. These outcomes include: Adoption, Died, Euthanasia, Return to owner and Transfer.
+# Animal Shelter Outcome Prediction
+
+This project aims to predict the outcome type of pets in an animal shelter based on various features such as animal type, age, breed, and color. The outcome type is a categorical variable with five levels.
+
+## Project Structure
+
+```
+animal_shelter_outcome_prediction
+├── data
+│   ├── test.csv          # Test dataset with animal information
+│   ├── train.csv         # Training dataset with animal information and outcome types
+├── notebooks
+│   └── exploratory_analysis.ipynb  # Jupyter notebook for exploratory data analysis
+├── src
+│   ├── data_processing.py  # Functions for loading and preprocessing datasets
+│   ├── feature_engineering.py  # Functions for feature engineering
+│   ├── model_training.py    # Code for training machine learning models
+│   ├── testing
+│   │   ├── test_data_processing.py  # Unit tests for data processing functions
+│   │   ├── test_feature_engineering.py  # Unit tests for feature engineering functions
+│   │   ├── test_model_training.py  # Unit tests for model training functions
+│   ├── model_prediction.py   # Functions for making predictions on new datasets
+│   ├── utils.py              # Utility functions used across different modules
+├── requirements.txt          # Required Python packages and their versions
+└── README.md                 # Documentation for the project
+```
+
+## Setup Instructions
+
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd animal_shelter_outcome_prediction
+   ```
+
+2. Install the required packages:
+   ```
+   pip install -r requirements.txt
+   ```
