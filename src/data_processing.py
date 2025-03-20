@@ -155,7 +155,6 @@ def process_breed_data(df, AnimalID="AnimalID"):
         - breed_mix (pandas.DataFrame): A DataFrame showing the original 'Breed' column values alongside the 'Mix' status.
 
     The function performs the following operations:
-    
     1. Standardizes text in the 'Breed' column using regular expressions to handle spaces, unknowns, and specific terms.
     2. Splits breeds containing 'Mix', creating a new 'Mix' column indicating mixed breed status.
     3. Separates multiple breeds listed in the same entry of the 'Breed' column into individual rows.
@@ -409,7 +408,7 @@ def process_coat_colors(df, AnimalID="AnimalID"):
     return df, coat_color, coat_patterns
 
 
-def preprocess_data(df, AnimalID="AnimalID"):
+def preprocess_data(df, AnimalID="AnimalID", dep_var="OutcomeType"):
     """
     Preprocesses animal data to clean and organize key attributes.
 
@@ -424,6 +423,8 @@ def preprocess_data(df, AnimalID="AnimalID"):
                          'AnimalType', and optionally 'OutcomeType'.
     - AnimalID (str, optional): The name of the column in `df` that uniquely identifies each animal. 
                                 Defaults to "AnimalID".
+    - dep_var (str, optional): The name of the dependent variable column, which is the target for prediction.
+                               Defaults to 'OutcomeType'.
 
     Returns:
     - tuple: A tuple containing multiple DataFrames representing different aspects of processed data.
@@ -468,6 +469,8 @@ def preprocess_data(df, AnimalID="AnimalID"):
     # split the column into two columns
     df['Sterilization'] = df['SexuponOutcome'].str.split(' ').str[0]
     df['SexuponOutcome'] = df['SexuponOutcome'].str.split(' ').str[1]
+    # combine "Spayed" and "Neutered" into "Sterilized"
+    df['Sterilization'] = df['Sterilization'].replace({'Spayed': 'Sterilized', 'Neutered': 'Sterilized'})
 
 
     # Breed of animals
@@ -478,8 +481,8 @@ def preprocess_data(df, AnimalID="AnimalID"):
     df, coat_color, coat_patterns = process_coat_colors(df, AnimalID=AnimalID)
 
 
-    if "OutcomeType" in df.columns:
-        animal_data = df[[AnimalID, 'OutcomeType', 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']]
+    if dep_var in df.columns:
+        animal_data = df[[AnimalID, dep_var, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']]
     else:
         animal_data = df[[AnimalID, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']]
 
@@ -515,88 +518,7 @@ def preprocess_data(df, AnimalID="AnimalID"):
     return (df, animal_data, breed, breed_mix, coat_color, coat_patterns)
 
 
-def encode_categorical_variables(df):
-    """
-    Encodes categorical variables in a DataFrame into numeric and dummy-encoded formats.
-
-    This function processes specific categorical columns within the input DataFrame by mapping their values 
-    to numeric codes or creating dummy/indicator variables. It also manages the inclusion of NaN categories 
-    where applicable and ensures certain original or redundant columns are dropped after encoding.
-
-    Parameters:
-    df (pandas.DataFrame): The input DataFrame containing data with categorical features that need encoding.
-
-    Returns:
-    pandas.DataFrame: A new DataFrame with encoded categorical variables, retaining only relevant transformed data.
-    
-    Process Overview:
-    1. Maps specific values in the 'OutcomeType' column to predefined numeric codes and creates a new 'OutcomeCode' column.
-    2. Generates dummy variables for specified columns such as "AnimalType", "SexuponOutcome", "AgeuponOutcome",
-       "Sterilization", "BreedType", "Mix", "CoatColor", and "CoatPattern". These are prefixed accordingly 
-       to differentiate them from other potential dummies.
-    3. Drops the original categorical columns and certain dummy variables that may be redundant or unnecessary, 
-       specifically keeping only informative or unique indicators for analysis.
-    
-    Example usage:
-        encoded_df = encode_categorical_variables(input_data)
-        
-    Assumptions:
-    - It is designed to handle NaN values appropriately by creating a dummy variable for them if they exist.
-    """
-    
-    # Mapping specific categorical values to numeric codes
-    outcome_type_mapping = {
-        'Adoption': 1,
-        'Return_to_owner': 2,
-        'Transfer': 3,
-        'Died': 4,
-        'Euthanasia': 5
-    }
-    
-    # Check if 'OutcomeType' column exists in the DataFrame before proceeding
-    if "OutcomeType" in df.columns:
-        df['OutcomeCode'] = df['OutcomeType'].map(outcome_type_mapping)
-    else:
-        pass
-    
-    # Creating dummy variables for specified categorical columns
-    columns_with_prefixes = [
-        ("AnimalType", "AnimalType"),
-        ("SexuponOutcome", "Sex"),
-        ("AgeuponOutcome", "Age"),
-        ("Sterilization", "Sterilization"),
-        ("BreedType", "BreedType"),
-        ("Mix", "Mix"),
-        ("CoatColor", "CoatColor"),
-        ("CoatPattern", "CoatPattern")
-    ]
-    
-    for column, prefix in columns_with_prefixes:
-        dummies = pd.get_dummies(df[column], dtype=int, dummy_na=True, prefix=prefix, prefix_sep="_")
-        df = pd.concat([df, dummies], axis=1)
-    
-    # Drop original and certain dummy columns
-    columns_to_drop = [
-        ["AnimalType", "AnimalType_Dog", "AnimalType_nan"],
-        ["Sex", "Sex_Male", "Sex_nan"],
-        ["AgeuponOutcome", "AgeuponOutcome_< 5 years", "AgeuponOutcome_nan"],
-        ["SterilizationType", "SterilizationType_Intact", "SterilizationType_nan"],
-        ["BreedType", "BreedType_nan"],
-        ["MixType", "MixType_Pure breed", "MixType_nan"],
-        ["CoatColor", "CoatColor_White", "CoatColor_nan"],
-        ["CoatPattern", "CoatPattern_nan"]
-    ]
-    
-    for column_group in columns_to_drop:
-        existing_columns = [col for col in column_group if col in df.columns]
-        if existing_columns:  # Proceed only if there are existing columns to drop
-            df.drop(existing_columns, axis=1, inplace=True)
-    
-
-    return df
-
-
-def process_data(file_path, AnimalID="AnimalID"):
+def process_data(file_path, AnimalID="AnimalID", dep_var="OutcomeType"):
     """
     Processes data from a specified file path by loading, preprocessing, 
     and encoding categorical variables in sequence to prepare it for analysis or modeling.
@@ -613,6 +535,8 @@ def process_data(file_path, AnimalID="AnimalID"):
     - file_path (str): The path to the CSV file containing the data to be processed.
     - AnimalID (str, optional): The name of the column in the DataFrame used as an identifier
       for individual animals. Defaults to "AnimalID".
+    - dep_var (str, optional): The name of the dependent variable column, which is the target
+      for prediction. Defaults to 'OutcomeType'.
 
     Returns:
     pandas.DataFrame: A processed DataFrame with loaded data that has been preprocessed and 
@@ -626,10 +550,7 @@ def process_data(file_path, AnimalID="AnimalID"):
     df = load_data(file_path)
     
     # Preprocess the loaded DataFrame
-    df = preprocess_data(df=df, AnimalID=AnimalID)[0]
-    
-    # Encode categorical variables in the DataFrame
-    df = encode_categorical_variables(df)
+    df = preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)[0]
     
     
     return df
