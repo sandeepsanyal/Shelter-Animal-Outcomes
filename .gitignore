@@ -2,3 +2,4 @@
 .DS_Store
 /src/__pycache__
 /pickle_files
+/data/Austin_Animal_Center_Outcomes_20250318.csv
