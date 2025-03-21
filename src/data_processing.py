@@ -560,7 +560,6 @@ def preprocess_data(
     print("\tCoat information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
-    start_time = time.time()
     if dep_var in df.columns:
         animal_data = df[[AnimalID, dep_var, 'Name', 'DateTime', 'AnimalType', 'AgeuponOutcome', 'SexuponOutcome', 'Sterilization']].drop_duplicates().reset_index(drop=True)
     else:
@@ -592,7 +591,6 @@ def preprocess_data(
         right_on=AnimalID,
         how='left'
     )
-    print("\tAll data merged in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     return (df, animal_data, breed, breed_mix, coat_color, coat_patterns)
