@@ -1,13 +1,10 @@
+import sys
 import time
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 import pandas as pd
 import joblib
-
-import utils
-import data_processing
-import feature_engineering
 
 
 def train_model(
@@ -57,6 +54,9 @@ def train_model(
           compatible functions as used within this method.
     """
 
+    sys.path.append(home_dir + r"/src")
+    import data_processing, feature_engineering, utils
+
     # Load and process training data
     start_time = time.time()
     processed_df = data_processing.process_data(
@@ -80,7 +80,7 @@ def train_model(
     # Preprocess the data (this should be done in the data_processing module)
     # For demonstration, let's assume the preprocessing is done here
     X = engineered_df.drop(columns=[AnimalID, dep_var])
-    y = engineered_df["OutcomeType"]
+    y = engineered_df[dep_var]
 
     # Split the data into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
