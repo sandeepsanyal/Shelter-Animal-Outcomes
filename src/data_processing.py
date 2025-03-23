@@ -444,7 +444,6 @@ def process_coat_colors(
 
 
 def preprocess_data(
-    home_dir: str,
     df: pd.DataFrame,
     AnimalID="AnimalID",
     dep_var="OutcomeType"
@@ -492,10 +491,6 @@ def preprocess_data(
     - The function assumes that the helper functions `convert_to_days`, `group_age`, 
       `process_breed_data`, and `process_coat_colors` are defined elsewhere in your codebase.
     """
-
-    sys.path.append(home_dir + r"/src")
-    import utils
-
 
     # Dependent Variable
     if dep_var in df.columns:
@@ -627,7 +622,7 @@ def process_data(
     df = load_data(home_dir=home_dir, data_file=data_file)
     
     # Preprocess the loaded DataFrame
-    df = preprocess_data(home_dir=home_dir, df=df, AnimalID=AnimalID, dep_var=dep_var)[0]
+    df = preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)[0]
     
     
     return df

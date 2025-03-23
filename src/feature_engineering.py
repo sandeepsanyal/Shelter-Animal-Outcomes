@@ -1,6 +1,9 @@
+import sys
 import pandas as pd
 
-def encode_categorical_variables(df: pd.DataFrame) -> pd.DataFrame:
+def encode_categorical_variables(
+        df: pd.DataFrame
+    ) -> pd.DataFrame:
     """
     Encodes categorical variables in a DataFrame into numeric and dummy-encoded formats.
 

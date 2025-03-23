@@ -1,4 +1,5 @@
 import time
+import re
 
 def calculate_elapsed_time(start_time):
     # Get the current time
@@ -23,3 +24,9 @@ def calculate_elapsed_time(start_time):
         elapsed_hours = elapsed_seconds / 604800
         return f"{elapsed_hours:.2f} weeks"
 
+# Function to clean feature names
+def clean_feature_name(name):
+    # Replace problematic characters with underscores or remove them
+    cleaned_name = re.sub(r'[,\[\]<]', '_', name)
+    
+    return cleaned_name
