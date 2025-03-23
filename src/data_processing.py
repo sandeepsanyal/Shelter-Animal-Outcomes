@@ -1,9 +1,7 @@
 import sys
-import time
 import numpy as np
 import pandas as pd
 import re
-from functools import reduce
 
 
 def load_data(
@@ -525,17 +523,14 @@ def preprocess_data(
     )
 
     # Age of animals
-    start_time = time.time()
     df['AgeuponOutcome'] = df['AgeuponOutcome'].str.replace('  ', ' ')
     ## Convert age to days
     df['AgeuponOutcome'] = df['AgeuponOutcome'].apply(convert_to_days)
     ## Group ages into categories
     df['AgeuponOutcome'] = df['AgeuponOutcome'].apply(group_age)
-    print("\tAge information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     # Sex of animals
-    start_time = time.time()
     ## remove multiple spaces
     df['SexuponOutcome'] = df['SexuponOutcome'].str.replace('  ', ' ')
     ## replace 'Unknown' with NaN
@@ -545,19 +540,14 @@ def preprocess_data(
     df['SexuponOutcome'] = df['SexuponOutcome'].str.split(' ').str[1]
     ## combine "Spayed" and "Neutered" into "Sterilized"
     df['Sterilization'] = df['Sterilization'].replace({'Spayed': 'Sterilized', 'Neutered': 'Sterilized'})
-    print("\tSex information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     # Breed of animals
-    start_time = time.time()
-    df, breed, breed_mix = process_breed_data(df, AnimalID=AnimalID)
-    print("\tBreed information processed in: {}".format(utils.calculate_elapsed_time(start_time)))    
+    df, breed, breed_mix = process_breed_data(df, AnimalID=AnimalID)    
 
 
     # Coat of animals
-    start_time = time.time()
     df, coat_color, coat_patterns = process_coat_colors(df, AnimalID=AnimalID)
-    print("\tCoat information processed in: {}".format(utils.calculate_elapsed_time(start_time)))
 
 
     if dep_var in df.columns:

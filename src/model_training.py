@@ -54,63 +54,56 @@ def train_model(
           compatible functions as used within this method.
     """
 
+    home_dir = r"/Users/wrngnfreeman/Library/CloudStorage/OneDrive-Personal/shared_projects/Shelter Animal Outcomes/Shelter-Animal-Outcomes-by-kaggle.com"
+    data_file = r"train"
+    AnimalID=r"AnimalID"
+    dep_var=r"OutcomeType"
+    seed=42
+
+    # import required modules
     sys.path.append(home_dir + r"/src")
-    import data_processing, feature_engineering, utils
+    import data_processing, feature_engineering, models, utils
 
     # Load and process training data
-    start_time = time.time()
     processed_df = data_processing.process_data(
         home_dir=home_dir,
         data_file=data_file,
-        AnimalID=r"AnimalID",
-        dep_var=r"OutcomeType"
+        AnimalID=AnimalID,
+        dep_var=dep_var
     )
-    print("Data loaded in: {}".format(utils.calculate_elapsed_time(start_time)))
-
     # Engineer features
-    start_time = time.time()
     engineered_df = feature_engineering.engineer_features(
         df=processed_df,
-        AnimalID=r"AnimalID",
-        dep_var=r"OutcomeType"
+        AnimalID=AnimalID,
+        dep_var=dep_var
     )
-    print("Features engineered in: {}".format(utils.calculate_elapsed_time(start_time)))
-
-
-    # Preprocess the data (this should be done in the data_processing module)
-    # For demonstration, let's assume the preprocessing is done here
-    X = engineered_df.drop(columns=[AnimalID, dep_var])
-    y = engineered_df[dep_var]
-
-    # Split the data into training and validation sets
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Initialize the model
-    start_time = time.time()
-    model = RandomForestClassifier(random_state=42)
-
-    # Train the model
-    model.fit(X_train, y_train)
-
-    # Validate the model
-    y_pred = model.predict(X_val)
-    print("Classification Report\n{}".format((classification_report(y_val, y_pred))))
-    print("Accuracy: {}".format(accuracy_score(y_val, y_pred)))
-
-
-    # Computer feature importances
-    feature_importances = model.feature_importances_
-    feature_names = X.columns
-    feature_importance_df = pd.DataFrame({"feature": feature_names, "importance": feature_importances})
-    feature_importance_df = feature_importance_df.sort_values(by="importance", ascending=False)
-    print("\nFeature Importances")
-    display(feature_importance_df)
-
-    # Save the trained model
-    if export_model_path:
-        joblib.dump(model, export_model_path)
     
-    print("Random Forest Model built in: {}".format(utils.calculate_elapsed_time(start_time)))
 
-    return model
+    # Model development
+    ## Multinomial Logistic Regression model
+    models.logistic_regression_model(
+        df=engineered_df,
+        AnimalID=r"AnimalID",
+        dep_var=r"OutcomeType",
+        seed=seed
+    )
+    ## Random Forest model
+    models.random_forest_model(
+        df=engineered_df,
+        AnimalID=r"AnimalID",
+        dep_var=r"OutcomeType",
+        seed=seed
+    ) 
+    ## ANN model
+    models.nn_model(
+        df=engineered_df,
+        AnimalID=r"AnimalID",
+        dep_var=r"OutcomeType",
+        seed=seed
+    )
+
+
+
+
+    return 
 

@@ -28,19 +28,21 @@ def encode_categorical_variables(df: pd.DataFrame) -> pd.DataFrame:
     Assumptions:
     - It is designed to handle NaN values appropriately by creating a dummy variable for them if they exist.
     """
+
+    data = df.copy()
     
     # Mapping specific categorical values to numeric codes
     outcome_type_mapping = {
-        'Adoption': 1,
-        'Return_to_owner': 2,
-        'Transfer': 3,
-        'Died': 4,
-        'Euthanasia': 5
+        'Adoption': 0,
+        'Return_to_owner': 1,
+        'Transfer': 2,
+        'Died': 3,
+        'Euthanasia': 4
     }
     
     # Check if 'OutcomeType' column exists in the DataFrame before proceeding
-    if "OutcomeType" in df.columns:
-        df['OutcomeType'] = df['OutcomeType'].map(outcome_type_mapping)
+    if "OutcomeType" in data.columns:
+        data['OutcomeType'] = data['OutcomeType'].map(outcome_type_mapping)
     else:
         pass
     
@@ -57,8 +59,8 @@ def encode_categorical_variables(df: pd.DataFrame) -> pd.DataFrame:
     ]
     
     for column, prefix in columns_with_prefixes:
-        dummies = pd.get_dummies(df[column], dtype=int, dummy_na=True, prefix=prefix, prefix_sep="_")
-        df = pd.concat([df, dummies], axis=1)
+        dummies = pd.get_dummies(data[column], dtype=int, dummy_na=True, prefix=prefix, prefix_sep="_")
+        data = pd.concat([data, dummies], axis=1)
     
     # Drop original and certain dummy columns
     columns_to_drop = [
@@ -73,12 +75,12 @@ def encode_categorical_variables(df: pd.DataFrame) -> pd.DataFrame:
     ]
     
     for column_group in columns_to_drop:
-        existing_columns = [col for col in column_group if col in df.columns]
+        existing_columns = [col for col in column_group if col in data.columns]
         if existing_columns:  # Proceed only if there are existing columns to drop
-            df.drop(existing_columns, axis=1, inplace=True)
+            data.drop(existing_columns, axis=1, inplace=True)
     
 
-    return df
+    return data
 
 
 def select_features(
@@ -119,10 +121,9 @@ def select_features(
     features = [col for col in df.columns if col not in [AnimalID, dep_var, 'Name', 'DateTime', 'SexuponOutcome', 'Sterilization', 'Mix']]
 
     existing_columns = [col for col in [AnimalID, dep_var] + features if col in df.columns]
-    df = df[existing_columns]
 
 
-    return df
+    return df[existing_columns]
 
 
 def engineer_features(
