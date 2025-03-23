@@ -160,10 +160,10 @@ def engineer_features(
     """
 
     # Encode categorical variables in the DataFrame
-    df = encode_categorical_variables(df)
+    df_encoded = encode_categorical_variables(df)
 
     # Select relevant features for model training
-    df = select_features(df, AnimalID=AnimalID, dep_var=dep_var)
+    df_selected = select_features(df_encoded, AnimalID=AnimalID, dep_var=dep_var)
 
 
-    return df
+    return df_selected
