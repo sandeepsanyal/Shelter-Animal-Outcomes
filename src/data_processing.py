@@ -88,8 +88,7 @@ def convert_to_days(age_str) -> int:
         return None
 
     # Use regular expressions to find the number and unit
-    match = re.match(r'(\d+)\s*(years?|weeks?|months?|days?)', age_str)
-    
+    match = re.match(r'(\d+)\s*(years?|months?|weeks?|days?)', age_str)
     if not match:
         return None  # Return None for unmatched formats
     

@@ -24,6 +24,19 @@ def calculate_elapsed_time(start_time):
         elapsed_hours = elapsed_seconds / 604800
         return f"{elapsed_hours:.2f} weeks"
 
+
+# Function to format y-axis ticks as "#,##0 K", "#,##0 M", "#,##0 B"
+def format_y_tick(value, tick_number):
+    if value >= 1_000_000_000:
+        return f'{value / 1_000_000_000:,.0f}B'
+    elif value >= 1_000_000:
+        return f'{value / 1_000_000:,.0f}M'
+    elif value >= 1_000:
+        return f'{value / 1_000:,.1f}K'
+    else:
+        return value
+    
+
 # Function to clean feature names
 def clean_feature_name(name):
     # Replace problematic characters with underscores or remove them
