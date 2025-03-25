@@ -403,7 +403,7 @@ def process_coat_colors(
     """
 
     ## remove multiple spaces
-    df['Color'] = df['Color'].str.replace('  ', ' ')
+    df['Color'] = df['Color'].str.replace('  ', ' ').str.strip()
 
     coatcolor = df.copy()
 
@@ -423,6 +423,7 @@ def process_coat_colors(
         right_on=AnimalID,
         how='left'
     ).drop_duplicates().reset_index(drop=True)
+    coat_color["CoatColor"] = coat_color["CoatColor"].str.replace(r' /', r'/').str.replace(r'/ ', r'/').str.strip().str.replace(r' ', r'/')
 
     coat_patterns = coatcolor[[AnimalID, 'Color', 'CoatPattern']].drop_duplicates().reset_index(drop=True)
 
@@ -437,6 +438,7 @@ def process_coat_colors(
         right_index=True,
         how='left'
     ).drop_duplicates().reset_index(drop=True)
+    coat_color["CoatColor"] = coat_color["CoatColor"].replace('', np.nan)
 
 
     return df, coat_color, coat_patterns

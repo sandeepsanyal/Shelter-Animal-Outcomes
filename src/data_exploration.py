@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import seaborn as sns
 
 
@@ -162,3 +163,77 @@ for i, count in enumerate(outcome_counts.values):
 plt.tight_layout(rect=[0, 0.03, 1, 1])
 plt.show()
 
+
+
+
+
+# Function to filter top 5 coat colors for a given animal type
+def get_top_coat_colors(df, animal_type, top_n=5):
+    # Filter data for the given animal type
+    filtered_df = df[df['AnimalType'] == animal_type]
+    # Calculate the value counts for CoatColor
+    total_counts = filtered_df['CoatColor'].count()
+    coat_color_counts = filtered_df['CoatColor'].value_counts().head(top_n)
+    # Get the index (coat colors) of the top 5 most common coat colors
+    top_coat_colors = coat_color_counts.index.tolist()
+    return top_coat_colors, coat_color_counts, total_counts
+
+# Get top 5 coat colors and their counts for Cats and Dogs
+top_cats, cat_counts, total_cats = get_top_coat_colors(processed_df, 'Cat')
+top_dogs, dog_counts, total_dogs = get_top_coat_colors(processed_df, 'Dog')
+
+# Determine the maximum count from both datasets
+max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
+
+# Set up the matplotlib figure
+plt.figure(figsize=(14, 6))
+plt.suptitle('White, Black and Brown are most common coat colors for both Cats and Dogs', fontsize=18)
+
+# Create a subplot for Cats
+ax1 = plt.subplot(1, 2, 1)
+sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
+plt.title('Distribution of Coat Color for Cats')
+plt.xlabel('Coat Color')
+plt.ylabel('Number of Cats (Total: {:,})'.format(total_cats), fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+# Format axis ticks
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Annotate bars with percentages for Cats
+for p in ax1.patches:
+    height = p.get_height()
+    percentage = (height / total_cats) * 100
+    ax1.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+
+# Create a subplot for Dogs
+ax2 = plt.subplot(1, 2, 2)
+sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
+plt.title('Distribution of Coat Color for Dogs', fontsize=12)
+plt.xlabel('Coat Color')
+plt.ylabel('Number of Dogs (Total: {:,})'.format(total_dogs), fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+# Format axis ticks
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Annotate bars with percentages for Dogs
+for p in ax2.patches:
+    height = p.get_height()
+    percentage = (height / total_dogs) * 100
+    ax2.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Apply the custom y-axis formatter to both subplots
+formatter = FuncFormatter(utils.format_y_tick)
+plt.gca().yaxis.set_major_formatter(formatter)  # This applies to the last subplot by default
+# Get all axes and apply the formatter to each
+axes = plt.gcf().get_axes()
+for ax in axes:
+    ax.yaxis.set_major_formatter(formatter)
+
+# Adjust layout
+plt.tight_layout()
+
+# Show the plots
+plt.show()
