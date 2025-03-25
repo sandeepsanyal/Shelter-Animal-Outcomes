@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
@@ -40,20 +41,10 @@ percentages = (outcome_counts / total_animals) * 100
 # Create a custom palette dictionary
 custom_palette = dict(zip(order, colors))
 # Create a DataFrame from the counts for plotting
-plot_df = pd.DataFrame({
-    'OutcomeType': outcome_counts.index,
-    'Count': outcome_counts.values
-})
+plot_df = pd.DataFrame({'OutcomeType': outcome_counts.index, 'Count': outcome_counts.values})
 # Create the bar chart using the pre-calculated data
 plt.figure(figsize=(6, 6))
-ax = sns.barplot(
-    x='OutcomeType',
-    y='Count',
-    data=plot_df,
-    palette=custom_palette,
-    hue='OutcomeType',  # Assigning 'OutcomeType' to hue
-    legend=False        # Setting legend to False as we don't need it
-)
+ax = sns.barplot(x='OutcomeType', y='Count', data=plot_df, palette=custom_palette, hue='OutcomeType')
 # Set the main title and subtitle
 plt.suptitle('Distribution of OutcomeType', fontsize=18)
 plt.title('Dependent Variable "OutcomeType" is imbalanced with\n<6% as "Euthanasia", and <1% as "Died"', fontsize=12)
@@ -73,7 +64,8 @@ plt.show()
 
 
 
-# Simlarly, show bar chart for 'Animal Type'. But with horizontal bars.
+## Animal Type
+
 # Define the order and colors for AnimalType
 order = ["Dog", "Cat"]
 colors = ["#8E9498", "#2D3033"]
@@ -86,23 +78,12 @@ percentages = (animal_counts / total_animals) * 100
 # Create a custom palette dictionary
 custom_palette = dict(zip(order, colors))
 # Create a DataFrame from the counts for plotting
-plot_df = pd.DataFrame({
-    'AnimalType': animal_counts.index,
-    'Count': animal_counts.values
-})
+plot_df = pd.DataFrame({'AnimalType': animal_counts.index, 'Count': animal_counts.values})
 # Create the horizontal bar chart using the pre-calculated data
-plt.figure(figsize=(9, 2))
-ax = sns.barplot(
-    x='Count',
-    y='AnimalType',
-    data=plot_df,
-    palette=custom_palette,
-    hue='AnimalType',  # Assigning 'AnimalType' to hue
-    legend=False       # Setting legend to False as we don't need it
-)
+plt.figure(figsize=(14, 2.5))
+ax = sns.barplot(x='Count', y='AnimalType', data=plot_df, palette=custom_palette, hue='AnimalType')
 # Set the main title and subtitle
-plt.suptitle('Distribution of AnimalType', fontsize=18)
-plt.title('Shelter has twice the number of Dogs than Cats', fontsize=12)
+plt.suptitle('Shelter has twice the number of Dogs than Cats', fontsize=18)
 # Set the labels
 plt.xlabel('Number of Animals (Total: {:,})'.format(total_animals), fontsize=10)
 plt.ylabel('Animal Type', fontsize=10)
@@ -114,65 +95,145 @@ ax.xaxis.set_major_formatter(plt.FuncFormatter(utils.format_y_tick))  # Custom f
 for i, count in enumerate(animal_counts.values):
     ax.text(count + 0.005 * max(animal_counts), i, f'{percentages.iloc[i]:.1f}%', ha='left', va='center', fontsize=9)
 # Show the plot
-plt.tight_layout(rect=[0, 0.03, 1, 1])
+plt.tight_layout()
+plt.show()
+
+# Define the order for OutcomeType and colors
+order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
+colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
+# Create a subplot for Cats and Dogs
+plt.figure(figsize=(14, 6))
+plt.suptitle('Cats are more likely to be transferred than dogs. While dogs are more likely to be returned to owner than cats.', fontsize=18)
+# Filter data for Cats and Dogs
+cats_df = processed_df.loc[processed_df['AnimalType']=='Cat', ]
+dogs_df = processed_df.loc[processed_df['AnimalType']=='Dog', ]
+# Calculate total counts for males and females
+total_cats = len(cats_df)
+total_dogs = len(dogs_df)
+# Determine the maximum count from both datasets
+cats_counts = cats_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+dogs_counts = dogs_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+max_count = ((max(cats_counts.max(), dogs_counts.max()) // 1000) + 1) * 1000
+# Plot bar chart for Cats
+ax1 = plt.subplot(1, 2, 1)
+male_counts = cats_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+sns.barplot(x=male_counts.index, y=male_counts.values, order=order, ax=ax1)
+plt.title('Cats')
+plt.xlabel('Outcome Type')
+plt.ylabel(f'Number of Cats (Total: {total_cats:,})', fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Set custom colors
+for i, bar in enumerate(ax1.patches):
+    bar.set_color(colors[i])
+# Format y-axis ticks
+ax1.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+# Annotate bars with percentages for Cats
+for p in ax1.patches:
+    height = p.get_height()
+    percentage = (height / total_cats) * 100
+    ax1.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Plot bar chart for Dogs
+ax2 = plt.subplot(1, 2, 2)
+female_counts = dogs_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+sns.barplot(x=female_counts.index, y=female_counts.values, order=order, ax=ax2)
+plt.title('Dogs')
+plt.xlabel('Outcome Type')
+plt.ylabel(f'Number of Dogs (Total: {total_dogs:,})', fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Set custom colors
+for i, bar in enumerate(ax2.patches):
+    bar.set_color(colors[i])
+# Format y-axis ticks
+ax2.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+# Annotate bars with percentages for Dogs
+for p in ax2.patches:
+    height = p.get_height()
+    percentage = (height / total_dogs) * 100
+    ax2.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Adjust layout
+plt.tight_layout()
+# Show the plots
 plt.show()
 
 
 
-# Same with AgeuponOutcome
+## AgeuponOutcome
+
 # Define the order and colors for AgeuponOutcome
 order = ['<1 week', '<1 month', '<6 months', '<1 year', '<5 years', '<10 years', '<15 years', '15+ years']
-colors = ['#0C85EE' for i in order]
 # Count the occurrences of each AgeuponOutcome
 outcome_counts = processed_df.loc[processed_df["AgeuponOutcome"].notna(), 'AgeuponOutcome'].value_counts().reindex(order, fill_value=0)
 # Calculate the total number of animals
 total_animals = outcome_counts.sum()
 # Calculate the percentage of each AgeuponOutcome
-percentages = (outcome_counts / total_animals) * 100
-# Create a custom palette dictionary
-custom_palette = dict(zip(order, colors))
-# Create a DataFrame from the counts for plotting
-plot_df = pd.DataFrame({
-    'AgeuponOutcome': outcome_counts.index,
-    'Count': outcome_counts.values
-})
-# Create the bar chart using the pre-calculated data
-plt.figure(figsize=(6, 6))
-ax = sns.barplot(
-    x='AgeuponOutcome',
-    y='Count',
-    data=plot_df,
-    palette=custom_palette,
-    hue='AgeuponOutcome',  # Assigning 'AgeuponOutcome' to hue
-    legend=False           # Setting legend to False as we don't need it
+percentages_age = (outcome_counts / total_animals) * 100
+# Define the order and colors for OutcomeType
+order_outcome = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
+colors_outcome = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
+# Count the occurrences of each combination of AgeuponOutcome and OutcomeType
+pivot_table = processed_df.pivot_table(values='AnimalID', index='AgeuponOutcome', columns='OutcomeType', aggfunc='count', fill_value=0)
+# Normalize the pivot table to get percentages
+pivot_table_percentage = pivot_table.div(pivot_table.sum(axis=1), axis=0) * 100
+# Set up the layout for two side-by-side subplots
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+plt.suptitle('Significant number of animals between age 1 week and 6 months are transfered', fontsize=18)
+# Plot the first bar chart on the left
+ax1 = plt.subplot(1, 2, 1)
+ax1 = sns.barplot(x='AgeuponOutcome', y='Count',
+    data=pd.DataFrame({'AgeuponOutcome': outcome_counts.index, 'Count': outcome_counts.values}),
+    color='#0C85EE', ax=axes[0]
 )
-# Set the main title and subtitle
-plt.suptitle('Distribution of Age Groups', fontsize=18)
-plt.title('Almost 70% of the animals are\nbetween 1-6 months or between 1-5 years of age', fontsize=12)
-# Set the labels
-plt.xlabel('Age Group', fontsize=10)
-plt.ylabel('Number of Animals (Total: {:,})'.format(total_animals), fontsize=10)
-# Format axis ticks
-plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
-plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
-ax.yaxis.set_major_formatter(plt.FuncFormatter(utils.format_y_tick))  # Custom formatter for y-axis ticks
-# Add percentage labels on top of each bar
+ax1.set_title('Distribution of Animals by Age Group')
+ax1.set_xlabel('Age Group')
+ax1.set_ylabel('Number of Animals (Total: {:,})'.format(total_animals))
+# Apply the custom y-axis formatter to both subplots
+formatter = FuncFormatter(utils.format_y_tick)
+plt.gca().yaxis.set_major_formatter(formatter)  # This applies to the last subplot by default
 for i, count in enumerate(outcome_counts.values):
-    ax.text(i, count + 0.005 * max(outcome_counts), f'{percentages.iloc[i]:.1f}%', ha='center', va='bottom', fontsize=9)
-# Show the plot
-plt.tight_layout(rect=[0, 0.03, 1, 1])
+    ax1.text(i, count + 0.005 * max(outcome_counts), f'{percentages_age.iloc[i]:.2f}%', ha='center')
+# Plot the second bar chart on the right (stacked)
+ax2 = plt.subplot(1, 2, 2)
+bottom = np.zeros(len(order))
+for i, outcome in enumerate(order_outcome):
+    ax2.bar(order, pivot_table_percentage[outcome], bottom=bottom, color=colors_outcome[i])
+    bottom += pivot_table_percentage[outcome]
+bottom = np.zeros(len(order))
+for i, outcome in enumerate(order_outcome):
+    for j, value in enumerate(pivot_table_percentage[outcome]):
+        if value >= 2:
+            ax2.text(j, bottom[j] + value / 2, f'{value:.0f}%', ha='center', va='center', fontsize=9)
+            bottom[j] += value
+        else:
+            ax2.text(j, bottom[j] + value / 2, f'{value:.0f}%', alpha=0, ha='center', va='center', fontsize=9)
+            bottom[j] += value
+# Set the title and labels for the second bar chart
+ax2.set_title('Stacked Bar Chart of Outcome Types by Age Group')
+ax2.set_xlabel('Age Group')
+ax2.set_ylabel('Percentage (%)')
+# Add legend
+ax2.legend(labels=order_outcome, title='Outcome Type', bbox_to_anchor=(1.05, 1), loc=2)
+plt.tight_layout()
 plt.show()
 
 
 
 
-# SexuponOutcome
+## SexuponOutcome
+
 # Define the order for OutcomeType and colors
 order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
 colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
 # Create a subplot for Males and Females
 plt.figure(figsize=(14, 6))
-plt.suptitle('Outcome Type Distribution by Sex', fontsize=18)
+plt.suptitle('Males seem to have a higher chance of being Returned to owner",\nwhile Females are more likely to be adopted.', fontsize=18)
 # Filter data for Males and Females
 males_df = processed_df.loc[processed_df['SexuponOutcome']=='Male', ]
 females_df = processed_df.loc[processed_df['SexuponOutcome']=='Female', ]
@@ -182,10 +243,15 @@ total_females = len(females_df)
 # Plot bar chart for Males
 ax1 = plt.subplot(1, 2, 1)
 male_counts = males_df['OutcomeType'].value_counts().reindex(order).fillna(0)
-sns.barplot(x=male_counts.index, y=male_counts.values, palette=colors, order=order, ax=ax1)
+sns.barplot(x=male_counts.index, y=male_counts.values, order=order, ax=ax1)
 plt.title('Males')
 plt.xlabel('Outcome Type')
 plt.ylabel(f'Number of Males (Total: {total_males:,})', fontsize=10)
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Set custom colors
+for i, bar in enumerate(ax1.patches):
+    bar.set_color(colors[i])
 # Format y-axis ticks
 ax1.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
 # Annotate bars with percentages for Males
@@ -198,10 +264,15 @@ for p in ax1.patches:
 # Plot bar chart for Females
 ax2 = plt.subplot(1, 2, 2)
 female_counts = females_df['OutcomeType'].value_counts().reindex(order).fillna(0)
-sns.barplot(x=female_counts.index, y=female_counts.values, palette=colors, order=order, ax=ax2)
+sns.barplot(x=female_counts.index, y=female_counts.values, order=order, ax=ax2)
 plt.title('Females')
 plt.xlabel('Outcome Type')
 plt.ylabel(f'Number of Females (Total: {total_females:,})', fontsize=10)
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Set custom colors
+for i, bar in enumerate(ax2.patches):
+    bar.set_color(colors[i])
 # Format y-axis ticks
 ax2.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
 # Annotate bars with percentages for Females
@@ -219,7 +290,8 @@ plt.show()
 
 
 
-# Sterilization Type
+## Sterilization Type
+
 # Define the order for OutcomeType and colors
 order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
 colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
@@ -285,28 +357,34 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
+
+
+# CoatColor
 # Function to filter top 5 coat colors for a given animal type
 def get_top_coat_colors(df, animal_type, top_n=5):
     # Filter data for the given animal type
     filtered_df = df[df['AnimalType'] == animal_type]
     # Calculate the value counts for CoatColor
-    total_counts = filtered_df['CoatColor'].count()
+    total_counts = filtered_df[AnimalID].count()
     coat_color_counts = filtered_df['CoatColor'].value_counts().head(top_n)
     # Get the index (coat colors) of the top 5 most common coat colors
     top_coat_colors = coat_color_counts.index.tolist()
     return top_coat_colors, coat_color_counts, total_counts
-
 # Get top 5 coat colors and their counts for Cats and Dogs
 top_cats, cat_counts, total_cats = get_top_coat_colors(processed_df, 'Cat')
 top_dogs, dog_counts, total_dogs = get_top_coat_colors(processed_df, 'Dog')
-
 # Determine the maximum count from both datasets
 max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
-
 # Set up the matplotlib figure
 plt.figure(figsize=(14, 6))
-plt.suptitle('White, Black and Brown are most common coat colors for both Cats and Dogs', fontsize=18)
-
+plt.suptitle('White, Black, and Brown are most common coat colors for both Cats and Dogs.', fontsize=18)
 # Create a subplot for Cats
 ax1 = plt.subplot(1, 2, 1)
 sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
@@ -324,7 +402,6 @@ for p in ax1.patches:
     ax1.annotate(f'{percentage:.2f}%', 
                  (p.get_x() + p.get_width() / 2., height), 
                  ha='center', va='bottom', fontsize=9, color='black')
-
 # Create a subplot for Dogs
 ax2 = plt.subplot(1, 2, 2)
 sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
@@ -349,9 +426,85 @@ plt.gca().yaxis.set_major_formatter(formatter)  # This applies to the last subpl
 axes = plt.gcf().get_axes()
 for ax in axes:
     ax.yaxis.set_major_formatter(formatter)
-
 # Adjust layout
 plt.tight_layout()
-
 # Show the plots
 plt.show()
+
+
+
+
+
+
+# CoatPattern
+# Function to filter top 5 coat colors for a given animal type
+def get_top_coat_pattern(df, animal_type, top_n=5):
+    # Filter data for the given animal type
+    filtered_df = df[df['AnimalType'] == animal_type]
+    # Calculate the value counts for CoatColor
+    total_counts = filtered_df[AnimalID].count()
+    missing = total_counts - filtered_df['CoatPattern'].count()
+    coat_color_counts = filtered_df['CoatPattern'].value_counts().head(top_n)
+    # Get the index (coat colors) of the top 5 most common coat colors
+    top_coat_colors = coat_color_counts.index.tolist()
+    return top_coat_colors, coat_color_counts, total_counts, missing
+# Get top 5 coat colors and their counts for Cats and Dogs
+top_cats, cat_counts, total_cats, missing_cats = get_top_coat_pattern(processed_df, 'Cat')
+top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_pattern(processed_df, 'Dog')
+# Determine the maximum count from both datasets
+max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
+# Set up the matplotlib figure
+plt.figure(figsize=(14, 6))
+plt.suptitle('Most cats are Tabby, while most dogs have Brindle pattern coats.', fontsize=18)
+# Create a subplot for Cats
+ax1 = plt.subplot(1, 2, 1)
+sns.countplot(x='CoatPattern', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
+plt.title('Distribution of Coat Pattern for Cats (Top 5)')
+plt.xlabel('Coat Pattern')
+plt.ylabel('Number of Cats (Total: {:,})'.format(total_cats), fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+# Format axis ticks
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Annotate bars with percentages for Cats
+for p in ax1.patches:
+    height = p.get_height()
+    percentage = (height / total_cats) * 100
+    ax1.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Create a subplot for Dogs
+ax2 = plt.subplot(1, 2, 2)
+sns.countplot(x='CoatPattern', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
+plt.title('Distribution of Coat Pattern for Dogs (Top 5)', fontsize=12)
+plt.xlabel('Coat Pattern')
+plt.ylabel('Number of Dogs (Total: {:,})'.format(total_dogs), fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+# Format axis ticks
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Annotate bars with percentages for Dogs
+for p in ax2.patches:
+    height = p.get_height()
+    percentage = (height / total_dogs) * 100
+    ax2.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Apply the custom y-axis formatter to both subplots
+formatter = FuncFormatter(utils.format_y_tick)
+plt.gca().yaxis.set_major_formatter(formatter)  # This applies to the last subplot by default
+# Get all axes and apply the formatter to each
+axes = plt.gcf().get_axes()
+for ax in axes:
+    ax.yaxis.set_major_formatter(formatter)
+# Add footer text
+text = "*Missing coat pattern: {:,} for cats, and {:,} for dogs".format(missing_cats, missing_dogs)
+ax2.text(1, -0.15, text, transform=ax2.transAxes, ha='right', color='red', fontsize=8)
+# Adjust layout
+plt.tight_layout()
+# Show the plots
+plt.show()
+
+
+
+

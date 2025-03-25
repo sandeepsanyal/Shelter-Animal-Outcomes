@@ -213,6 +213,12 @@ def process_breed_data(
         "Toy": ["Affenpinscher", "Bruss Griffon", "Cavalier Span", "Chihuahua Longhair", "Chihuahua Shorthair", "Chinese Crested", "Havanese", "Italian Greyhound", "Japanese Chin", "Maltese", "Miniature Pinscher", "Papillon", "Pekingese", "Pomeranian", "Pug", "Shih Tzu", "Silky Terrier", "Toy Fox Terrier", "Toy Poodle", "Yorkshire", "Yorkshire Terrier"],
         "Working": ["Akita", "Alaskan Malamute", "Australian Kelpie", "Bernese Mountain Dog", "Boerboel", "Boxer", "Bullmastiff", "Canaan Dog", "Cane Corso", "Doberman Pinsch", "Dogue De Bordeaux", "German Pinscher", "Great Dane", "Great Pyrenees", "Greater Swiss Mountain Dog", "Kuvasz", "Leonberger", "Mastiff", "Neapolitan Mastiff", "Newfoundland", "Port Water Dog", "Rottweiler", "Samoyed", "Schnauzer Giant", "Siberian Husky"]
     }
+    # For cat breeds
+    cat_breed_group_dict = {
+        "Domestic Longhair": ["Domestic Longhair"],
+        "Domestic Mediumhair": ["Domestic Medium Hair"],
+        "Domestic Shorthair": ["Domestic Shorthair", "British Shorthair", "American Shorthair"]
+    }
 
     # Replace certain values in the 'Breed' column for consistency
     replacements = [
@@ -224,7 +230,8 @@ def process_breed_data(
         (r'Wirehair', ''),  # remove "Wirehair"
         (r'Smooth Coat', ''),  # remove "Smooth Coat"
         (r'Smooth', ''),  # remove "Smooth"
-        (r'Flat Coat', '')   # remove "Flat Coat"
+        (r'Flat Coat', ''),   # remove "Flat Coat"
+        (r'Exotic Shorthair', r'American Shorthair/Persian')   # replace 'Exotic Shorthair' with 'American Shorthair/Persian'
     ]
     for pattern, repl in replacements:
         df['Breed'] = df['Breed'].str.replace(pattern, repl, regex=True, flags=re.IGNORECASE).str.strip()
@@ -240,27 +247,49 @@ def process_breed_data(
     breed_list = breed_list.explode()
     # Create a seperate breed dataframe
     breed = pd.merge(
-        left=df[[AnimalID, "Breed", "Mix"]],
+        left=df[[AnimalID, "AnimalType", "Breed", "Mix"]],
         right=breed_list.to_frame(name='Breed_broken'),
         left_index=True,
         right_index=True,
         how='left'
     ).reset_index(drop=True)
     breed = breed.drop_duplicates().reset_index(drop=True)
-    del breed_list
+    breed_list = breed[[AnimalID, "Breed_broken"]]
 
-    reverse_breed_group_map = {}
+
+    # Create reverse mappings for dogs and cats
+    reverse_dog_breed_group_map = {}
     for group, breeds in dog_breed_group_dict.items():
         for b in breeds:
-            reverse_breed_group_map[b] = group
-    breed['BreedType'] = breed['Breed_broken'].apply(lambda x: reverse_breed_group_map.get(x, 'Unknown'))
-    breed.drop(columns=['Breed_broken'], inplace=True)
+            reverse_dog_breed_group_map[b] = group
+
+    reverse_cat_breed_group_map = {}
+    for group, breeds in cat_breed_group_dict.items():
+        for b in breeds:
+            reverse_cat_breed_group_map[b] = group
+    
+    # Apply breed group mapping
+    breed['BreedType'] = breed.apply(
+        lambda row: reverse_dog_breed_group_map.get(
+            row['Breed_broken'],
+            reverse_cat_breed_group_map.get(
+                row['Breed_broken'],
+                'Unknown'
+            )
+        ) if row['AnimalType'] == "Dog" \
+        else reverse_cat_breed_group_map.get(
+            row['Breed_broken'],
+            'Unknown'
+        ), axis=1
+    ).replace("Unknown", np.nan)
+
+    breed.drop(columns=['AnimalType', 'Breed_broken'], inplace=True)
     breed = breed.drop_duplicates().reset_index(drop=True)
 
 
     # For breed mix
     ## Calculate frequency of each AnimalID in breed data
-    breed_freq = breed[AnimalID].value_counts().reset_index(name='count')
+    breed_freq = breed_list[AnimalID].value_counts().reset_index(name='count')
     ## Merge the frequency counts back into the original dataframe
     df = pd.merge(
         left=df,
@@ -281,9 +310,6 @@ def process_breed_data(
     del breed_freq
 
     breed.drop(columns=['Mix'], inplace=True)
-    # Adding cat breed as well
-    breed["BreedType"] = [breed.loc[i, "Breed"] if pd.isna(breed.loc[i, "BreedType"]) else breed.loc[i, "BreedType"] for i in range(breed.shape[0])]
-    breed = breed.drop_duplicates().reset_index(drop=True)
 
     breed_mix = df[[AnimalID, "Breed", "Mix"]]
     breed_mix = breed_mix.loc[:, :]  # Ensures you have the original DataFrame
