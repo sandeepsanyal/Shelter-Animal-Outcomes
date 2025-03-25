@@ -166,6 +166,124 @@ plt.show()
 
 
 
+# SexuponOutcome
+# Define the order for OutcomeType and colors
+order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
+colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
+# Create a subplot for Males and Females
+plt.figure(figsize=(14, 6))
+plt.suptitle('Outcome Type Distribution by Sex', fontsize=18)
+# Filter data for Males and Females
+males_df = processed_df.loc[processed_df['SexuponOutcome']=='Male', ]
+females_df = processed_df.loc[processed_df['SexuponOutcome']=='Female', ]
+# Calculate total counts for males and females
+total_males = len(males_df)
+total_females = len(females_df)
+# Plot bar chart for Males
+ax1 = plt.subplot(1, 2, 1)
+male_counts = males_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+sns.barplot(x=male_counts.index, y=male_counts.values, palette=colors, order=order, ax=ax1)
+plt.title('Males')
+plt.xlabel('Outcome Type')
+plt.ylabel(f'Number of Males (Total: {total_males:,})', fontsize=10)
+# Format y-axis ticks
+ax1.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+# Annotate bars with percentages for Males
+for p in ax1.patches:
+    height = p.get_height()
+    percentage = (height / total_males) * 100
+    ax1.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Plot bar chart for Females
+ax2 = plt.subplot(1, 2, 2)
+female_counts = females_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+sns.barplot(x=female_counts.index, y=female_counts.values, palette=colors, order=order, ax=ax2)
+plt.title('Females')
+plt.xlabel('Outcome Type')
+plt.ylabel(f'Number of Females (Total: {total_females:,})', fontsize=10)
+# Format y-axis ticks
+ax2.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+# Annotate bars with percentages for Females
+for p in ax2.patches:
+    height = p.get_height()
+    percentage = (height / total_females) * 100
+    ax2.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Adjust layout
+plt.tight_layout()
+# Show the plots
+plt.show()
+
+
+
+
+# Sterilization Type
+# Define the order for OutcomeType and colors
+order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
+colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
+# Create a subplot for Sterilization Type
+plt.figure(figsize=(14, 6))
+plt.suptitle('Sterilization status has a significant impact on OutcomeType.', fontsize=18)
+# Filter data for both Sterilization Types
+sterilized_df = processed_df.loc[processed_df['Sterilization']=='Sterilized', ]
+intact_df = processed_df.loc[processed_df['Sterilization']=='Intact', ]
+# Calculate total counts for both Sterilization Type
+total_sterilized = len(sterilized_df)
+total_intact = len(intact_df)
+# Determine the maximum count from both datasets
+sterilized_counts = sterilized_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+intact_counts = intact_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+max_count = ((max(sterilized_counts.max(), intact_counts.max()) // 1000) + 1) * 1000
+# Plot bar chart for Sterilized animals
+ax1 = plt.subplot(1, 2, 1)
+sns.barplot(x=sterilized_counts.index, y=sterilized_counts.values, order=order, ax=ax1)
+plt.title('Sterilized')
+plt.xlabel('Outcome Type')
+plt.ylabel(f'Number of Sterilized Animals (Total: {total_sterilized:,})', fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Set custom colors
+for i, bar in enumerate(ax1.patches):
+    bar.set_color(colors[i])
+# Format y-axis ticks
+ax1.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+# Annotate bars with percentages for Sterilized animals
+for p in ax1.patches:
+    height = p.get_height()
+    percentage = (height / total_sterilized) * 100
+    ax1.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Plot bar chart for Intact animals
+ax2 = plt.subplot(1, 2, 2)
+sns.barplot(x=intact_counts.index, y=intact_counts.values, order=order, ax=ax2)
+plt.title('Intact')
+plt.xlabel('Outcome Type')
+plt.ylabel(f'Number of Intact Animals (Total: {total_intact:,})', fontsize=10)
+plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+# Set custom colors
+for i, bar in enumerate(ax2.patches):
+    bar.set_color(colors[i])
+# Format y-axis ticks
+ax2.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+# Annotate bars with percentages for Intact animals
+for p in ax2.patches:
+    height = p.get_height()
+    percentage = (height / total_intact) * 100
+    ax2.annotate(f'{percentage:.2f}%', 
+                 (p.get_x() + p.get_width() / 2., height), 
+                 ha='center', va='bottom', fontsize=9, color='black')
+# Adjust layout
+plt.tight_layout()
+# Show the plots
+plt.show()
+
+
 
 # Function to filter top 5 coat colors for a given animal type
 def get_top_coat_colors(df, animal_type, top_n=5):
