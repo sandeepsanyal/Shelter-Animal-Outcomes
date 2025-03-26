@@ -1,7 +1,7 @@
 import sys
 
 
-home_dir = r"/Users/wrngnfreeman/Library/CloudStorage/OneDrive-Personal/shared_projects/Shelter Animal Outcomes/Shelter-Animal-Outcomes-by-kaggle.com"
+home_dir = r"/Users/wrngnfreeman/Library/CloudStorage/OneDrive-Personal/shared_projects/Shelter Animal Outcomes/Shelter-Animal-Outcomes"
 data_file = r"train"
 AnimalID=r"AnimalID"
 dep_var=r"OutcomeType"

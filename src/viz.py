@@ -9,33 +9,15 @@ import seaborn as sns
 sns.set_style('whitegrid')
 
 
-home_dir = r"/Users/wrngnfreeman/Library/CloudStorage/OneDrive-Personal/shared_projects/Shelter Animal Outcomes/Shelter-Animal-Outcomes-by-kaggle.com"
-data_file = r"train"
-AnimalID=r"AnimalID"
-dep_var=r"OutcomeType"
-
-
-# import required modules
-sys.path.append(home_dir + r"/src")
-import data_processing, utils
-
-# Load and process training data
-processed_df = data_processing.process_data(
-    home_dir=home_dir,
-    data_file=data_file,
-    AnimalID=AnimalID,
-    dep_var=dep_var
-)
-
 
 # Data exploration
 
 ## Visualize the distribution of the dependent variable
 
-def viz_outcometype(processed_df):
-    """
-    This function visualizes the distribution of the dependent variable 'OutcomeType'."
-    """
+def viz_outcometype(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Define the order and colors for OutcomeType
     order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
@@ -72,7 +54,10 @@ def viz_outcometype(processed_df):
 
 
 ## Animal Type
-def viz_animal_type(processed_df):
+def viz_animal_type(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Define the order and colors for AnimalType
     order = ["Dog", "Cat"]
     colors = ["#8E9498", "#2D3033"]
@@ -174,7 +159,10 @@ def viz_animal_type(processed_df):
 
 
 ## AgeuponOutcome
-def viz_age(processed_df):
+def viz_age(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Define the order and colors for AgeuponOutcome
     order = ['<1 week', '<1 month', '<6 months', '<1 year', '<5 years', '<10 years', '<15 years', '15+ years']
     # Count the occurrences of each AgeuponOutcome
@@ -245,7 +233,10 @@ def viz_age(processed_df):
 
 
 ## SexuponOutcome
-def viz_sex(processed_df):
+def viz_sex(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Define the order for OutcomeType and colors
     order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
@@ -313,7 +304,10 @@ def viz_sex(processed_df):
 
 
 ## Sterilization Type
-def viz_sterilization(processed_df):
+def viz_sterilization(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Define the order for OutcomeType and colors
     order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
@@ -401,7 +395,10 @@ def get_top_breed(df, animal_type, top_n, AnimalID=r"AnimalID"):
     # Get the index (coat colors) of the top 5 most common coat colors
     top_breed = breed_counts.index.tolist()
     return top_breed, breed_counts, total_counts, missing
-def viz_breed(processed_df, top_n=5):
+def viz_breed(home_dir, processed_df, top_n=5):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     processed_df["BreedType"] = [
         processed_df.loc[i, "BreedType"] if processed_df.loc[i, "AnimalType"]=="Cat" \
         else processed_df.loc[i, "Breed_broken"] \
@@ -470,7 +467,10 @@ def viz_breed(processed_df, top_n=5):
 
 
 ## Mixed or Pure Breed
-def viz_breed_mix(processed_df):
+def viz_breed_mix(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Define the order and colors for AnimalType
     order = ["Mix", "Pure breed"]
     colors = ["#8E9498", "#2D3033"]
@@ -580,7 +580,10 @@ def get_top_coat_colors(df, animal_type, AnimalID=r"AnimalID", top_n=5):
     # Get the index (coat colors) of the top 5 most common coat colors
     top_coat_colors = coat_color_counts.index.tolist()
     return top_coat_colors, coat_color_counts, total_counts, missing
-def viz_coatcolor(processed_df, AnimalID=r"AnimalID"):
+def viz_coatcolor(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Get top 5 coat colors and their counts for Cats and Dogs
     top_cats, cat_counts, total_cats, missing_cats = get_top_coat_colors(df=processed_df, animal_type='Cat')
     top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_colors(df=processed_df, animal_type='Dog')
@@ -655,7 +658,10 @@ def get_top_coat_pattern(df, animal_type, AnimalID=r"AnimalID", top_n=5):
     # Get the index (coat colors) of the top 5 most common coat colors
     top_coat_colors = coat_color_counts.index.tolist()
     return top_coat_colors, coat_color_counts, total_counts, missing
-def viz_coatpattern(processed_df, AnimalID=r"AnimalID"):
+def viz_coatpattern(home_dir, processed_df):
+    # import required modules
+    sys.path.append(home_dir + r"/src")
+    import utils
     # Get top 5 coat colors and their counts for Cats and Dogs
     top_cats, cat_counts, total_cats, missing_cats = get_top_coat_pattern(df=processed_df, animal_type='Cat')
     top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_pattern(df=processed_df, animal_type='Dog')

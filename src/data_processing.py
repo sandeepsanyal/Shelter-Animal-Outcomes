@@ -43,6 +43,23 @@ def load_data(
     data = pd.read_csv(home_dir + r"/data/" + data_file + r".csv")
     data = data.drop_duplicates().reset_index(drop=True)
 
+    data.rename(
+        columns={
+            "Animal ID": "AnimalID",
+            "Date of Birth": "DateOfBirth",
+            "Outcome Type": "OutcomeType",
+            "Outcome Subtype": "OutcomeSubtype",
+            "Animal Type": "AnimalType",
+            "Sex upon Outcome": "SexuponOutcome",
+            "Age upon Outcome": "AgeuponOutcome"
+        },
+        inplace=True
+    )
+    data = data[
+        (data["AnimalType"].isin(["Cat", "Dog"])) &
+        (data["OutcomeType"].isin(['Adoption', 'Euthanasia', 'Transfer', 'Return to Owner', 'Died']))
+    ]
+
 
     return data
 
