@@ -385,7 +385,183 @@ def viz_sterilization(processed_df):
 
 
 
+# Breed
+# Function to filter top 5 Breeds for a given animal type
+def get_top_breed(df, animal_type, top_n, AnimalID=r"AnimalID"):
+    # Filter data for the given animal type
+    filtered_df = df[df['AnimalType'] == animal_type]
+    # Calculate the value counts for Breeds
+    total_counts = filtered_df[AnimalID].count()
+    if animal_type=="Cat":
+        missing = total_counts - filtered_df['BreedType'].count()
+        breed_counts = filtered_df['BreedType'].value_counts().head(top_n)
+    else:
+        missing = total_counts - filtered_df['Breed_broken'].count()
+        breed_counts = filtered_df['Breed_broken'].value_counts().head(top_n)
+    # Get the index (coat colors) of the top 5 most common coat colors
+    top_breed = breed_counts.index.tolist()
+    return top_breed, breed_counts, total_counts, missing
+def viz_breed(processed_df, top_n=5):
+    processed_df["BreedType"] = [
+        processed_df.loc[i, "BreedType"] if processed_df.loc[i, "AnimalType"]=="Cat" \
+        else processed_df.loc[i, "Breed_broken"] \
+        for i in range(len(processed_df))
+    ]
+    # Get top 5 coat colors and their counts for Cats and Dogs
+    top_cats, cat_counts, total_cats, missing_cats = get_top_breed(df=processed_df, animal_type='Cat', top_n=top_n)
+    top_dogs, dog_counts, total_dogs, missing_dogs = get_top_breed(df=processed_df, animal_type='Dog', top_n=top_n)
+    processed_df['BreedType'] = processed_df['BreedType'].replace("Unknown", np.nan)
+    # Determine the maximum count from both datasets
+    max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
+    # Set up the matplotlib figure
+    plt.figure(figsize=(14, 6))
+    plt.suptitle('Most cats are Domestic Shorthairs. But we see variety in dog breeds.', fontsize=18)
+    # Create a subplot for Cats
+    ax1 = plt.subplot(1, 2, 1)
+    sns.countplot(x='BreedType', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
+    plt.title('Distribution of Breed for Cats (Top 5)')
+    plt.xlabel('Breed')
+    plt.ylabel('Number of Cats (Total: {:,})'.format(total_cats), fontsize=10)
+    plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+    # Format axis ticks
+    plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+    plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+    # Annotate bars with percentages for Cats
+    for p in ax1.patches:
+        height = p.get_height()
+        percentage = (height / total_cats) * 100
+        ax1.annotate(f'{percentage:.2f}%', 
+                    (p.get_x() + p.get_width() / 2., height), 
+                    ha='center', va='bottom', fontsize=9, color='black')
+    # Create a subplot for Dogs
+    ax2 = plt.subplot(1, 2, 2)
+    sns.countplot(x='BreedType', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
+    plt.title('Distribution of Breed for Dogs (Top 5)', fontsize=12)
+    plt.xlabel('BreedType')
+    plt.ylabel('Number of Dogs (Total: {:,})'.format(total_dogs), fontsize=10)
+    plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
+    # Format axis ticks
+    plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+    plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+    # Annotate bars with percentages for Dogs
+    for p in ax2.patches:
+        height = p.get_height()
+        percentage = (height / total_dogs) * 100
+        ax2.annotate(f'{percentage:.2f}%', 
+                    (p.get_x() + p.get_width() / 2., height), 
+                    ha='center', va='bottom', fontsize=9, color='black')
+    # Apply the custom y-axis formatter to both subplots
+    formatter = FuncFormatter(utils.format_y_tick)
+    plt.gca().yaxis.set_major_formatter(formatter)  # This applies to the last subplot by default
+    # Get all axes and apply the formatter to each
+    axes = plt.gcf().get_axes()
+    for ax in axes:
+        ax.yaxis.set_major_formatter(formatter)
+    # Add footer text
+    text = "*Missing Breed: {:,} for cats, and {:,} for dogs".format(missing_cats, missing_dogs)
+    ax2.text(1, -0.15, text, transform=ax2.transAxes, ha='right', color='red', fontsize=8)
+    # Adjust layout
+    plt.tight_layout()
+    # Show the plots
+    plt.show()
 
+
+
+
+
+## Mixed or Pure Breed
+def viz_breed_mix(processed_df):
+    # Define the order and colors for AnimalType
+    order = ["Mix", "Pure breed"]
+    colors = ["#8E9498", "#2D3033"]
+    # Count the occurrences of each AnimalType
+    animal_counts = processed_df['Mix'].value_counts().reindex(order, fill_value=0)
+    # Calculate the total number of animals
+    total_animals = animal_counts.sum()
+    # Calculate the percentage of each AnimalType
+    percentages = (animal_counts / total_animals) * 100
+    # Create a custom palette dictionary
+    custom_palette = dict(zip(order, colors))
+    # Create a DataFrame from the counts for plotting
+    plot_df = pd.DataFrame({'Mix': animal_counts.index, 'Count': animal_counts.values})
+    # Create the horizontal bar chart using the pre-calculated data
+    plt.figure(figsize=(14, 2.5))
+    ax = sns.barplot(x='Count', y='Mix', data=plot_df, palette=custom_palette, hue='Mix')
+    # Set the main title and subtitle
+    plt.suptitle('Most animals in the shelter are mixed breed animals', fontsize=18)
+    # Set the labels
+    plt.xlabel('Number of Animals (Total: {:,})'.format(total_animals), fontsize=10)
+    plt.ylabel('Animal Type', fontsize=10)
+    # Format axis ticks
+    plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+    plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(utils.format_y_tick))  # Custom formatter for y-axis ticks
+    # Add percentage labels on the right side of each bar
+    for i, count in enumerate(animal_counts.values):
+        ax.text(count + 0.005 * max(animal_counts), i, f'{percentages.iloc[i]:.1f}%', ha='left', va='center', fontsize=9)
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
+
+
+    # Define the order for OutcomeType and colors
+    order = ["Adoption", "Return_to_owner", "Transfer", "Euthanasia", "Died"]
+    colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
+    # Create a subplot for Mixed and Pure Breed animals
+    plt.figure(figsize=(14, 6))
+    plt.suptitle('Mixed breeds are mode likely to be adopted. While pure breed animals are more likely to be returned to owner.', fontsize=18)
+    # Filter data for Mix and Pure
+    mix_df = processed_df.loc[processed_df['Mix']=='Mix', ]
+    pure_df = processed_df.loc[processed_df['Mix']=='Pure breed', ]
+    # Calculate total counts for males and females
+    total_mix = len(mix_df)
+    total_pure = len(pure_df)
+    # Plot bar chart for Cats
+    ax1 = plt.subplot(1, 2, 1)
+    mix_counts = mix_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+    sns.barplot(x=mix_counts.index, y=mix_counts.values, order=order, ax=ax1)
+    plt.title('Mixed Breeds')
+    plt.xlabel('Outcome Type')
+    plt.ylabel(f'Number of Mixed Breeds (Total: {total_mix:,})', fontsize=10)
+    plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+    plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+    # Set custom colors
+    for i, bar in enumerate(ax1.patches):
+        bar.set_color(colors[i])
+    # Format y-axis ticks
+    ax1.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+    # Annotate bars with percentages for Mixed Breeds
+    for p in ax1.patches:
+        height = p.get_height()
+        percentage = (height / total_mix) * 100
+        ax1.annotate(f'{percentage:.2f}%', 
+                    (p.get_x() + p.get_width() / 2., height), 
+                    ha='center', va='bottom', fontsize=9, color='black')
+    # Plot bar chart for Pure Breeds
+    ax2 = plt.subplot(1, 2, 2)
+    pure_counts = pure_df['OutcomeType'].value_counts().reindex(order).fillna(0)
+    sns.barplot(x=pure_counts.index, y=pure_counts.values, order=order, ax=ax2)
+    plt.title('Pure Breeds')
+    plt.xlabel('Outcome Type')
+    plt.ylabel(f'Number of Pure Breeds (Total: {total_pure:,})', fontsize=10)
+    plt.tick_params(axis='x', labelsize=9)  # Size for x-axis ticks
+    plt.tick_params(axis='y', labelsize=9)  # Size for y-axis ticks
+    # Set custom colors
+    for i, bar in enumerate(ax2.patches):
+        bar.set_color(colors[i])
+    # Format y-axis ticks
+    ax2.yaxis.set_major_formatter(FuncFormatter(utils.format_y_tick))
+    # Annotate bars with percentages for Pure Breeds
+    for p in ax2.patches:
+        height = p.get_height()
+        percentage = (height / total_pure) * 100
+        ax2.annotate(f'{percentage:.2f}%', 
+                    (p.get_x() + p.get_width() / 2., height), 
+                    ha='center', va='bottom', fontsize=9, color='black')
+    # Adjust layout
+    plt.tight_layout()
+    # Show the plots
+    plt.show()
 
 
 
@@ -393,21 +569,21 @@ def viz_sterilization(processed_df):
 
 
 # CoatColor
+# Function to filter top 5 coat colors for a given animal type
+def get_top_coat_colors(df, animal_type, AnimalID=r"AnimalID", top_n=5):
+    # Filter data for the given animal type
+    filtered_df = df[df['AnimalType'] == animal_type]
+    # Calculate the value counts for CoatColor
+    total_counts = filtered_df[AnimalID].count()
+    missing = total_counts - filtered_df['CoatColor'].count()
+    coat_color_counts = filtered_df['CoatColor'].value_counts().head(top_n)
+    # Get the index (coat colors) of the top 5 most common coat colors
+    top_coat_colors = coat_color_counts.index.tolist()
+    return top_coat_colors, coat_color_counts, total_counts, missing
 def viz_coatcolor(processed_df, AnimalID=r"AnimalID"):
-    # Function to filter top 5 coat colors for a given animal type
-    def get_top_coat_colors(df, animal_type, top_n=5):
-        # Filter data for the given animal type
-        filtered_df = df[df['AnimalType'] == animal_type]
-        # Calculate the value counts for CoatColor
-        total_counts = filtered_df[AnimalID].count()
-        missing = total_counts - filtered_df['CoatColor'].count()
-        coat_color_counts = filtered_df['CoatColor'].value_counts().head(top_n)
-        # Get the index (coat colors) of the top 5 most common coat colors
-        top_coat_colors = coat_color_counts.index.tolist()
-        return top_coat_colors, coat_color_counts, total_counts, missing
     # Get top 5 coat colors and their counts for Cats and Dogs
-    top_cats, cat_counts, total_cats, missing_cats = get_top_coat_colors(processed_df, 'Cat')
-    top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_colors(processed_df, 'Dog')
+    top_cats, cat_counts, total_cats, missing_cats = get_top_coat_colors(df=processed_df, animal_type='Cat')
+    top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_colors(df=processed_df, animal_type='Dog')
     # Determine the maximum count from both datasets
     max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
     # Set up the matplotlib figure
@@ -468,21 +644,21 @@ def viz_coatcolor(processed_df, AnimalID=r"AnimalID"):
 
 
 # CoatPattern
+# Function to filter top 5 coat colors for a given animal type
+def get_top_coat_pattern(df, animal_type, AnimalID=r"AnimalID", top_n=5):
+    # Filter data for the given animal type
+    filtered_df = df[df['AnimalType'] == animal_type]
+    # Calculate the value counts for CoatColor
+    total_counts = filtered_df[AnimalID].count()
+    missing = total_counts - filtered_df['CoatPattern'].count()
+    coat_color_counts = filtered_df['CoatPattern'].value_counts().head(top_n)
+    # Get the index (coat colors) of the top 5 most common coat colors
+    top_coat_colors = coat_color_counts.index.tolist()
+    return top_coat_colors, coat_color_counts, total_counts, missing
 def viz_coatpattern(processed_df, AnimalID=r"AnimalID"):
-    # Function to filter top 5 coat colors for a given animal type
-    def get_top_coat_pattern(df, animal_type, top_n=5):
-        # Filter data for the given animal type
-        filtered_df = df[df['AnimalType'] == animal_type]
-        # Calculate the value counts for CoatColor
-        total_counts = filtered_df[AnimalID].count()
-        missing = total_counts - filtered_df['CoatPattern'].count()
-        coat_color_counts = filtered_df['CoatPattern'].value_counts().head(top_n)
-        # Get the index (coat colors) of the top 5 most common coat colors
-        top_coat_colors = coat_color_counts.index.tolist()
-        return top_coat_colors, coat_color_counts, total_counts, missing
     # Get top 5 coat colors and their counts for Cats and Dogs
-    top_cats, cat_counts, total_cats, missing_cats = get_top_coat_pattern(processed_df, 'Cat')
-    top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_pattern(processed_df, 'Dog')
+    top_cats, cat_counts, total_cats, missing_cats = get_top_coat_pattern(df=processed_df, animal_type='Cat')
+    top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_pattern(df=processed_df, animal_type='Dog')
     # Determine the maximum count from both datasets
     max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
     # Set up the matplotlib figure

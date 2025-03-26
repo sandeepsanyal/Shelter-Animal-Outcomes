@@ -217,7 +217,8 @@ def process_breed_data(
     cat_breed_group_dict = {
         "Domestic Longhair": ["Domestic Longhair"],
         "Domestic Mediumhair": ["Domestic Medium Hair"],
-        "Domestic Shorthair": ["Domestic Shorthair", "British Shorthair", "American Shorthair"]
+        "Domestic Shorthair": ["Domestic Shorthair", "British Shorthair", "American Shorthair"],
+        "Pixiebob": ["Pixiebob Shorthair"]
     }
 
     # Replace certain values in the 'Breed' column for consistency
@@ -256,34 +257,29 @@ def process_breed_data(
     breed = breed.drop_duplicates().reset_index(drop=True)
     breed_list = breed[[AnimalID, "Breed_broken"]]
 
-
-    # Create reverse mappings for dogs and cats
-    reverse_dog_breed_group_map = {}
+    # Create a combined reverse mapping dictionary
+    reverse_breed_group_map = {}
     for group, breeds in dog_breed_group_dict.items():
         for b in breeds:
-            reverse_dog_breed_group_map[b] = group
-
-    reverse_cat_breed_group_map = {}
+            reverse_breed_group_map[b] = (group, "Dog")
     for group, breeds in cat_breed_group_dict.items():
         for b in breeds:
-            reverse_cat_breed_group_map[b] = group
+            reverse_breed_group_map[b] = (group, "Cat")
     
-    # Apply breed group mapping
-    breed['BreedType'] = breed.apply(
-        lambda row: reverse_dog_breed_group_map.get(
-            row['Breed_broken'],
-            reverse_cat_breed_group_map.get(
-                row['Breed_broken'],
-                'Unknown'
-            )
-        ) if row['AnimalType'] == "Dog" \
-        else reverse_cat_breed_group_map.get(
-            row['Breed_broken'],
-            'Unknown'
-        ), axis=1
-    ).replace("Unknown", np.nan)
+    # Function to get the breed type
+    def get_breed_type(breed_name, animal_type):
+        if breed_name in reverse_breed_group_map:
+            return reverse_breed_group_map[breed_name][0]
+        elif animal_type == "Dog":
+            return "Unknown"
+        else:  # For cats, retain the original breed name if no mapping is found
+            return breed_name
 
-    breed.drop(columns=['AnimalType', 'Breed_broken'], inplace=True)
+    # Apply the function to create a new column 'BreedType'
+    breed['BreedType'] = breed.apply(lambda row: get_breed_type(row['Breed_broken'], row['AnimalType']), axis=1)
+    breed['BreedType'] = breed['BreedType'].replace("Unknown", np.nan)
+
+    breed.drop(columns=['AnimalType'], inplace=True)
     breed = breed.drop_duplicates().reset_index(drop=True)
 
 
@@ -301,10 +297,11 @@ def process_breed_data(
     ## Assign 'Mix' where there are multiple breeds for an AnimalID
     df.loc[df['count'] > 1, 'Mix'] = 'Mix'
     ## Assign 'Pure breed' or keep NaN based on the presence of a Breed entry
-    df.loc[
-        (df['count'] == 1) & df['Breed'].notna(),
-        'Mix'
-    ] = 'Pure breed'
+    df['Mix'] = df['Mix'].fillna(value='Pure breed')
+    # df.loc[
+    #     (df['count'] == 1) & df['Breed'].notna(),
+    #     'Mix'
+    # ] = 'Pure breed'
     ## Clean up by dropping the auxiliary frequency column
     df.drop(columns=['count'], inplace=True)
     del breed_freq
