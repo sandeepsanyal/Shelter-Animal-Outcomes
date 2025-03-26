@@ -509,7 +509,7 @@ def viz_breed_mix(home_dir, processed_df):
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
     # Create a subplot for Mixed and Pure Breed animals
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Mixed breeds are mode likely to be adopted. While pure breed animals are more likely to be returned to owner.', fontsize=18)
+    plt.suptitle('Mixed breeds are more likely to be adopted. While pure breed animals are more likely to be returned to owner.', fontsize=18)
     # Filter data for Mix and Pure
     mix_df = processed_df.loc[processed_df['Mix']=='Mix', ]
     pure_df = processed_df.loc[processed_df['Mix']=='Pure breed', ]
