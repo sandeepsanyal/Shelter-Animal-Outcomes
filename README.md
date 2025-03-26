@@ -1,14 +1,12 @@
 <h1>Animal Shelter Outcome Prediction</h1>
-<h2>The project</h2>
-<a href="https://www.kaggle.com/c/shelter-animal-outcomes">Shelter Animal Outcomes by kaggle.com</a>
 
 <h2>Objective</h2>
-This project aims to predict the outcome type of pets in an animal shelter based on various features such as animal type, age, breed, and color. The outcome type is a categorical variable with five levels.
+This project aims to predict the outcome type of pets in Austin Animal Shelter based on various features such as animal type, age, breed, and color. The outcome type is a categorical variable with five levels.
 
 <h2>The training data set</h2>
-To get the data click <a href="https://www.kaggle.com/c/shelter-animal-outcomes/data">here</a> and sign up at <a href="kaggle.com">kaggle.com</a>.
+Dataset is downloaded from the city of Austin open data portal. To get the data click <a href="https://data.austintexas.gov/browse?q=austin+animal+center&sortBy=relevance&page=1&pageSize=20">here</a>.
 
-Here's what the first few rows of the training set look like:
+Here's what few rows of the dataset look like:
 
 | AnimalID | Name    | DateTime            | OutcomeType       | OutcomeSubtype | AnimalType | SexuponOutcome   | AgeuponOutcome | Breed                      | Color      |
 |----------|---------|---------------------|-------------------|----------------|------------|------------------|----------------|----------------------------|------------|
@@ -25,8 +23,6 @@ Here's what the first few rows of the training set look like:
 animal_shelter_outcome_prediction
 ├── data
 │   ├── test.csv          # Dataset to predict on. Does not contain dependent variable.
-│   ├── train.csv         # Training dataset containing both animal information and outcome types
-│   └── sample_submission.csv  # Sample submission file format for model predictions
 ├── notebooks
 │   ├── exploratory_analysis.ipynb  # Jupyter notebook used for performing exploratory data analysis on the datasets
 │   └── prediction.ipynb            # Jupyter notebook for making predictions using the trained models
@@ -49,7 +45,7 @@ animal_shelter_outcome_prediction
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/sandeepsanyal/Shelter-Animal-Outcomes-by-kaggle.com.git
+   git clone https://github.com/sandeepsanyal/Shelter-Animal-Outcomes.git
    cd animal_shelter_outcome_prediction
    ```
 
