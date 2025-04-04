@@ -32,11 +32,11 @@ def viz_outcometype(home_dir, processed_df):
     # Create a DataFrame from the counts for plotting
     plot_df = pd.DataFrame({'OutcomeType': outcome_counts.index, 'Count': outcome_counts.values})
     # Create the bar chart using the pre-calculated data
-    plt.figure(figsize=(6, 6))
+    plt.figure(figsize=(7.2, 6))
     ax = sns.barplot(x='OutcomeType', y='Count', data=plot_df, palette=custom_palette, hue='OutcomeType')
     # Set the main title and subtitle
     plt.suptitle('Distribution of OutcomeType', fontsize=18)
-    plt.title('Dependent Variable "OutcomeType" is imbalanced with\n<6% as "Euthanasia", and <1% as "Died"', fontsize=12)
+    plt.title('Dependent Variable "OutcomeType" is imbalanced with\n<3% as "Euthanasia", and <1% as "Died"', fontsize=12)
     # Set the labels
     plt.xlabel('Outcome Type', fontsize=10)
     plt.ylabel('Number of Animals (Total: {:,})'.format(total_animals), fontsize=10)
@@ -380,8 +380,8 @@ def viz_sterilization(home_dir, processed_df):
 
 
 # Breed
-# Function to filter top 5 Breeds for a given animal type
-def get_top_breed(df, animal_type, top_n, AnimalID=r"AnimalID"):
+# Function to filter top n Breeds for a given animal type
+def get_top_breed(df, animal_type, top_n=5, AnimalID=r"AnimalID"):
     # Filter data for the given animal type
     filtered_df = df[df['AnimalType'] == animal_type]
     # Calculate the value counts for Breeds
@@ -392,7 +392,7 @@ def get_top_breed(df, animal_type, top_n, AnimalID=r"AnimalID"):
     else:
         missing = total_counts - filtered_df['Breed_broken'].count()
         breed_counts = filtered_df['Breed_broken'].value_counts().head(top_n)
-    # Get the index (coat colors) of the top 5 most common coat colors
+    # Get the index (coat colors) of the top n most common coat colors
     top_breed = breed_counts.index.tolist()
     return top_breed, breed_counts, total_counts, missing
 def viz_breed(home_dir, processed_df, top_n=5):
@@ -404,7 +404,7 @@ def viz_breed(home_dir, processed_df, top_n=5):
         else processed_df.loc[i, "Breed_broken"] \
         for i in range(len(processed_df))
     ]
-    # Get top 5 coat colors and their counts for Cats and Dogs
+    # Get top n coat colors and their counts for Cats and Dogs
     top_cats, cat_counts, total_cats, missing_cats = get_top_breed(df=processed_df, animal_type='Cat', top_n=top_n)
     top_dogs, dog_counts, total_dogs, missing_dogs = get_top_breed(df=processed_df, animal_type='Dog', top_n=top_n)
     processed_df['BreedType'] = processed_df['BreedType'].replace("Unknown", np.nan)
@@ -416,7 +416,7 @@ def viz_breed(home_dir, processed_df, top_n=5):
     # Create a subplot for Cats
     ax1 = plt.subplot(1, 2, 1)
     sns.countplot(x='BreedType', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
-    plt.title('Distribution of Breed for Cats (Top 5)')
+    plt.title('Distribution of Breed for Cats (Top {})'.format(top_n))
     plt.xlabel('Breed')
     plt.ylabel('Number of Cats (Total: {:,})'.format(total_cats), fontsize=10)
     plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
@@ -433,7 +433,7 @@ def viz_breed(home_dir, processed_df, top_n=5):
     # Create a subplot for Dogs
     ax2 = plt.subplot(1, 2, 2)
     sns.countplot(x='BreedType', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
-    plt.title('Distribution of Breed for Dogs (Top 5)', fontsize=12)
+    plt.title('Distribution of Breed for Dogs (Top {})'.format(top_n), fontsize=12)
     plt.xlabel('BreedType')
     plt.ylabel('Number of Dogs (Total: {:,})'.format(total_dogs), fontsize=10)
     plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
@@ -455,7 +455,7 @@ def viz_breed(home_dir, processed_df, top_n=5):
     for ax in axes:
         ax.yaxis.set_major_formatter(formatter)
     # Add footer text
-    text = "*Missing Breed: {:,} for cats, and {:,} for dogs".format(missing_cats, missing_dogs)
+    text = "*Missing Breed: {:,} for cats, and {:,} for dogs\nNote: Animals can be a mix of different breeds".format(missing_cats, missing_dogs)
     ax2.text(1, -0.15, text, transform=ax2.transAxes, ha='right', color='red', fontsize=8)
     # Adjust layout
     plt.tight_layout()
@@ -569,22 +569,22 @@ def viz_breed_mix(home_dir, processed_df):
 
 
 # CoatColor
-# Function to filter top 5 coat colors for a given animal type
+# Function to filter top n coat colors for a given animal type
 def get_top_coat_colors(df, animal_type, AnimalID=r"AnimalID", top_n=5):
     # Filter data for the given animal type
     filtered_df = df[df['AnimalType'] == animal_type]
     # Calculate the value counts for CoatColor
-    total_counts = filtered_df[AnimalID].count()
-    missing = total_counts - filtered_df['CoatColor'].count()
+    total_counts = filtered_df[AnimalID].drop_duplicates().count()
+    missing = total_counts - filtered_df[[AnimalID, 'CoatColor']].dropna().drop_duplicates()[AnimalID].drop_duplicates().count()
     coat_color_counts = filtered_df['CoatColor'].value_counts().head(top_n)
-    # Get the index (coat colors) of the top 5 most common coat colors
+    # Get the index (coat colors) of the top n most common coat colors
     top_coat_colors = coat_color_counts.index.tolist()
     return top_coat_colors, coat_color_counts, total_counts, missing
-def viz_coatcolor(home_dir, processed_df):
+def viz_coatcolor(home_dir, processed_df, top_n=5):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
-    # Get top 5 coat colors and their counts for Cats and Dogs
+    # Get top n coat colors and their counts for Cats and Dogs
     top_cats, cat_counts, total_cats, missing_cats = get_top_coat_colors(df=processed_df, animal_type='Cat')
     top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_colors(df=processed_df, animal_type='Dog')
     # Determine the maximum count from both datasets
@@ -595,7 +595,7 @@ def viz_coatcolor(home_dir, processed_df):
     # Create a subplot for Cats
     ax1 = plt.subplot(1, 2, 1)
     sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
-    plt.title('Distribution of Coat Color for Cats (Top 5)')
+    plt.title('Distribution of Coat Color for Cats (Top {})'.format(top_n))
     plt.xlabel('Coat Color')
     plt.ylabel('Number of Cats (Total: {:,})'.format(total_cats), fontsize=10)
     plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
@@ -612,7 +612,7 @@ def viz_coatcolor(home_dir, processed_df):
     # Create a subplot for Dogs
     ax2 = plt.subplot(1, 2, 2)
     sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
-    plt.title('Distribution of Coat Color for Dogs (Top 5)', fontsize=12)
+    plt.title('Distribution of Coat Color for Dogs (Top {})'.format(top_n), fontsize=12)
     plt.xlabel('Coat Color')
     plt.ylabel('Number of Dogs (Total: {:,})'.format(total_dogs), fontsize=10)
     plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
@@ -634,7 +634,7 @@ def viz_coatcolor(home_dir, processed_df):
     for ax in axes:
         ax.yaxis.set_major_formatter(formatter)
     # Add footer text
-    text = "*Missing coat color: {:,} for cats, and {:,} for dogs".format(missing_cats, missing_dogs)
+    text = "*Missing coat color: {:,} for cats, and {:,} for dogs.\nNote: Animals can have more than 1 coat colors".format(missing_cats, missing_dogs)
     ax2.text(1, -0.15, text, transform=ax2.transAxes, ha='right', color='red', fontsize=8)
     # Adjust layout
     plt.tight_layout()
@@ -647,22 +647,22 @@ def viz_coatcolor(home_dir, processed_df):
 
 
 # CoatPattern
-# Function to filter top 5 coat colors for a given animal type
+# Function to filter top n coat pattern for a given animal type
 def get_top_coat_pattern(df, animal_type, AnimalID=r"AnimalID", top_n=5):
     # Filter data for the given animal type
     filtered_df = df[df['AnimalType'] == animal_type]
-    # Calculate the value counts for CoatColor
-    total_counts = filtered_df[AnimalID].count()
-    missing = total_counts - filtered_df['CoatPattern'].count()
-    coat_color_counts = filtered_df['CoatPattern'].value_counts().head(top_n)
-    # Get the index (coat colors) of the top 5 most common coat colors
-    top_coat_colors = coat_color_counts.index.tolist()
-    return top_coat_colors, coat_color_counts, total_counts, missing
-def viz_coatpattern(home_dir, processed_df):
+    # Calculate the value counts for CoatPattern
+    total_counts = filtered_df[AnimalID].drop_duplicates().count()
+    missing = total_counts - filtered_df[[AnimalID, 'CoatPattern']].dropna().drop_duplicates()[AnimalID].drop_duplicates().count()
+    coat_pattern_counts = filtered_df['CoatPattern'].value_counts().head(top_n)
+    # Get the index (coat pattern) of the top n most common coat pattern
+    top_coat_colors = coat_pattern_counts.index.tolist()
+    return top_coat_colors, coat_pattern_counts, total_counts, missing
+def viz_coatpattern(home_dir, processed_df, top_n=5):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
-    # Get top 5 coat colors and their counts for Cats and Dogs
+    # Get top n coat pattern and their counts for Cats and Dogs
     top_cats, cat_counts, total_cats, missing_cats = get_top_coat_pattern(df=processed_df, animal_type='Cat')
     top_dogs, dog_counts, total_dogs, missing_dogs = get_top_coat_pattern(df=processed_df, animal_type='Dog')
     # Determine the maximum count from both datasets
@@ -673,7 +673,7 @@ def viz_coatpattern(home_dir, processed_df):
     # Create a subplot for Cats
     ax1 = plt.subplot(1, 2, 1)
     sns.countplot(x='CoatPattern', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
-    plt.title('Distribution of Coat Pattern for Cats (Top 5)')
+    plt.title('Distribution of Coat Pattern for Cats (Top {})'.format(top_n))
     plt.xlabel('Coat Pattern')
     plt.ylabel('Number of Cats (Total: {:,})'.format(total_cats), fontsize=10)
     plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count
@@ -690,7 +690,7 @@ def viz_coatpattern(home_dir, processed_df):
     # Create a subplot for Dogs
     ax2 = plt.subplot(1, 2, 2)
     sns.countplot(x='CoatPattern', data=processed_df[processed_df['AnimalType'] == 'Dog'], order=top_dogs)
-    plt.title('Distribution of Coat Pattern for Dogs (Top 5)', fontsize=12)
+    plt.title('Distribution of Coat Pattern for Dogs (Top {})'.format(top_n), fontsize=12)
     plt.xlabel('Coat Pattern')
     plt.ylabel('Number of Dogs (Total: {:,})'.format(total_dogs), fontsize=10)
     plt.ylim(0, max_count)  # Set the y-axis limit to the maximum count

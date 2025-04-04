@@ -20,7 +20,7 @@ processed_df = data_processing.process_data(
 )
 # Engineer features
 engineered_df = feature_engineering.engineer_features(
-    df=processed_df,
+    df=processed_df.drop(columns=["Breed_broken"]),
     AnimalID=AnimalID,
     dep_var=dep_var
 )

@@ -479,6 +479,7 @@ def process_coat_colors(
         right_index=True,
         how='left'
     ).drop_duplicates().reset_index(drop=True)
+    coat_color["CoatColor"] = coat_color["CoatColor"].replace("Unknown", np.nan)
     coat_color["CoatColor"] = coat_color["CoatColor"].replace('', np.nan)
 
 
@@ -663,8 +664,5 @@ def process_data(
     # Load data from the specified file path
     df = load_data(home_dir=home_dir, data_file=data_file)
     
-    # Preprocess the loaded DataFrame
-    df = preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)[0]
-    
-    
-    return df
+    # Return preprocessed dataFrames
+    return preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)
