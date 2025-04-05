@@ -20,25 +20,27 @@ Here's what few rows of the dataset look like:
 <h2>Project Structure</h2>
 
 ```
-animal_shelter_outcome_prediction
-├── data
-│   ├── test.csv          # Dataset to predict on. Does not contain dependent variable.
-├── notebooks
+Shelter-Animal-Outcomes/
+├── requirements.txt          # Lists all the required Python packages and their versions needed to run the project
+├── README.md                 # Main documentation file providing an overview of the project, setup instructions, and usage guidelines
+├── data/                     # Directory containing datasets used in the project
+│   └── Austin_Animal_Center_Outcomes_20250318.csv  # Dataset from Austin Animal Center Outcomes
+├── notebooks/
 │   ├── exploratory_analysis.ipynb  # Jupyter notebook used for performing exploratory data analysis on the datasets
 │   └── prediction.ipynb            # Jupyter notebook for making predictions using the trained models
-├── src
-│   ├── data_processing.py  # Contains functions to load and preprocess datasets, such as cleaning and feature scaling
-│   ├── feature_engineering.py  # Includes methods for creating new features from existing ones to improve model performance
-│   ├── model_training.py    # Code dedicated to training machine learning models on the prepared dataset
-│   ├── testing
-│   │   ├── test_data_processing.py  # Unit tests for validating data processing functions
-│   │   ├── test_feature_engineering.py  # Unit tests for ensuring feature engineering functions work correctly
-│   │   └── test_model_training.py  # Unit tests to check the model training process and outcomes
-│   └── model_prediction.py   # Contains functions designed for making predictions on new or unseen datasets using trained models
-├── pickle_files
-│   ├── rf_model.pkl        # Pickled Random Forest model saved after training, ready for deployment or prediction
-├── requirements.txt          # Lists all the required Python packages and their versions needed to run the project
-└── README.md                 # Main documentation file providing an overview of the project, setup instructions, and usage guidelines
+└── src/                        # Source code directory containing modules and scripts
+    ├── feature_engineering.py  # Functions for creating new features from existing ones to improve model performance
+    ├── models.py               # Definitions of machine learning models used in the project
+    ├── model_training.py       # Scripts dedicated to training machine learning models on the prepared dataset
+    ├── utils.py                # Utility functions used across the project, such as logging and configuration management
+    ├── data_processing.py      # Functions to load and preprocess datasets, including cleaning and collation
+    ├── model_prediction.py     # Functions designed for making predictions on new or unseen datasets using trained models
+    ├── tableau_data.py         # Code for preparing data to be used in Tableau visualizations
+    └── viz.py                  # Code for creating visualizations using libraries like Matplotlib or Seaborn
+    └── testing/                # Directory containing unit tests for the project's modules
+        ├── test_data_processing.py  # Unit tests for validating data processing functions
+        ├── test_feature_engineering.py  # Unit tests for ensuring feature engineering functions work correctly
+        └── test_model_training.py     # Unit tests to check the model training process and outcomes
 ```
 
 <h2>Setup Instructions</h2>
@@ -53,3 +55,9 @@ animal_shelter_outcome_prediction
    ```bash
    pip install -r requirements.txt
    ```
+
+<h2>Tableau Dashboard</h2>
+Explore our interactive Tableau Dashboard to delve deeper into the dataset. This tool provides a user-friendly interface for detailed analysis.
+
+[Interactive Tableau Dashboard (link 1)](https://public.tableau.com/views/InteractivePetManagementDashboard/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link) <br>
+[Interactive Tableau Dashboard (link 2)](https://public.tableau.com/views/InteractivePetManagementDashboard_17435387085530/Dashboard1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
