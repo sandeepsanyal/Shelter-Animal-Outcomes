@@ -14,7 +14,7 @@ sns.set_style('whitegrid')
 
 ## Visualize the distribution of the dependent variable
 
-def viz_outcometype(home_dir, processed_df):
+def viz_outcometype(home_dir, processed_df, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -35,7 +35,7 @@ def viz_outcometype(home_dir, processed_df):
     plt.figure(figsize=(7.2, 6))
     ax = sns.barplot(x='OutcomeType', y='Count', data=plot_df, palette=custom_palette, hue='OutcomeType')
     # Set the main title and subtitle
-    plt.suptitle('Distribution of OutcomeType', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     plt.title('Dependent Variable "OutcomeType" is imbalanced with\n<3% as "Euthanasia", and <1% as "Died"', fontsize=12)
     # Set the labels
     plt.xlabel('Outcome Type', fontsize=10)
@@ -54,7 +54,7 @@ def viz_outcometype(home_dir, processed_df):
 
 
 ## Animal Type
-def viz_animal_type(home_dir, processed_df):
+def viz_animal_type(home_dir, processed_df, chart_title1="Enter Chart Title", chart_title2="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -75,7 +75,7 @@ def viz_animal_type(home_dir, processed_df):
     plt.figure(figsize=(14, 2.5))
     ax = sns.barplot(x='Count', y='AnimalType', data=plot_df, palette=custom_palette, hue='AnimalType')
     # Set the main title and subtitle
-    plt.suptitle('Shelter has twice the number of Dogs than Cats', fontsize=18)
+    plt.suptitle(chart_title1, fontsize=18)
     # Set the labels
     plt.xlabel('Number of Animals (Total: {:,})'.format(total_animals), fontsize=10)
     plt.ylabel('Animal Type', fontsize=10)
@@ -96,7 +96,7 @@ def viz_animal_type(home_dir, processed_df):
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
     # Create a subplot for Cats and Dogs
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Cats are more likely to be transferred than dogs. While dogs are more likely to be returned to owner than cats.', fontsize=18)
+    plt.suptitle(chart_title2, fontsize=18)
     # Filter data for Cats and Dogs
     cats_df = processed_df.loc[processed_df['AnimalType']=='Cat', ]
     dogs_df = processed_df.loc[processed_df['AnimalType']=='Dog', ]
@@ -159,7 +159,7 @@ def viz_animal_type(home_dir, processed_df):
 
 
 ## AgeuponOutcome
-def viz_age(home_dir, processed_df):
+def viz_age(home_dir, processed_df, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -181,7 +181,7 @@ def viz_age(home_dir, processed_df):
     pivot_table_percentage = pivot_table.div(pivot_table.sum(axis=1), axis=0) * 100
     # Set up the layout for two side-by-side subplots
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    plt.suptitle('Significant number of animals between age 1 week and 6 months are transfered', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     # Plot the first bar chart on the left
     ax1 = plt.subplot(1, 2, 1)
     ax1 = sns.barplot(x='AgeuponOutcome', y='Count',
@@ -233,7 +233,7 @@ def viz_age(home_dir, processed_df):
 
 
 ## SexuponOutcome
-def viz_sex(home_dir, processed_df):
+def viz_sex(home_dir, processed_df, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -242,7 +242,7 @@ def viz_sex(home_dir, processed_df):
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
     # Create a subplot for Males and Females
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Males seem to have a higher chance of being Returned to owner",\nwhile Females are more likely to be adopted.', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     # Filter data for Males and Females
     males_df = processed_df.loc[processed_df['SexuponOutcome']=='Male', ]
     females_df = processed_df.loc[processed_df['SexuponOutcome']=='Female', ]
@@ -304,7 +304,7 @@ def viz_sex(home_dir, processed_df):
 
 
 ## Sterilization Type
-def viz_sterilization(home_dir, processed_df):
+def viz_sterilization(home_dir, processed_df, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -313,7 +313,7 @@ def viz_sterilization(home_dir, processed_df):
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
     # Create a subplot for Sterilization Type
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Sterilization status has a significant impact on OutcomeType.', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     # Filter data for both Sterilization Types
     sterilized_df = processed_df.loc[processed_df['Sterilization']=='Sterilized', ]
     intact_df = processed_df.loc[processed_df['Sterilization']=='Intact', ]
@@ -395,7 +395,7 @@ def get_top_breed(df, animal_type, top_n=5, AnimalID=r"AnimalID"):
     # Get the index (coat colors) of the top n most common coat colors
     top_breed = breed_counts.index.tolist()
     return top_breed, breed_counts, total_counts, missing
-def viz_breed(home_dir, processed_df, top_n=5):
+def viz_breed(home_dir, processed_df, top_n=5, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -412,7 +412,7 @@ def viz_breed(home_dir, processed_df, top_n=5):
     max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
     # Set up the matplotlib figure
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Most cats are Domestic Shorthairs. But we see variety in dog breeds.', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     # Create a subplot for Cats
     ax1 = plt.subplot(1, 2, 1)
     sns.countplot(x='BreedType', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
@@ -467,7 +467,7 @@ def viz_breed(home_dir, processed_df, top_n=5):
 
 
 ## Mixed or Pure Breed
-def viz_breed_mix(home_dir, processed_df):
+def viz_breed_mix(home_dir, processed_df, chart_title1="Enter Chart Title", chart_title2="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -488,7 +488,7 @@ def viz_breed_mix(home_dir, processed_df):
     plt.figure(figsize=(14, 2.5))
     ax = sns.barplot(x='Count', y='Mix', data=plot_df, palette=custom_palette, hue='Mix')
     # Set the main title and subtitle
-    plt.suptitle('Most animals in the shelter are mixed breed animals', fontsize=18)
+    plt.suptitle(chart_title1, fontsize=18)
     # Set the labels
     plt.xlabel('Number of Animals (Total: {:,})'.format(total_animals), fontsize=10)
     plt.ylabel('Animal Type', fontsize=10)
@@ -509,7 +509,7 @@ def viz_breed_mix(home_dir, processed_df):
     colors = ["#76C7C0", "#6495ED", "#DA70D6", "#FFA07A", "#FF4500"]
     # Create a subplot for Mixed and Pure Breed animals
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Mixed breeds are more likely to be adopted. While pure breed animals are more likely to be returned to owner.', fontsize=18)
+    plt.suptitle(chart_title2, fontsize=18)
     # Filter data for Mix and Pure
     mix_df = processed_df.loc[processed_df['Mix']=='Mix', ]
     pure_df = processed_df.loc[processed_df['Mix']=='Pure breed', ]
@@ -580,7 +580,7 @@ def get_top_coat_colors(df, animal_type, AnimalID=r"AnimalID", top_n=5):
     # Get the index (coat colors) of the top n most common coat colors
     top_coat_colors = coat_color_counts.index.tolist()
     return top_coat_colors, coat_color_counts, total_counts, missing
-def viz_coatcolor(home_dir, processed_df, top_n=5):
+def viz_coatcolor(home_dir, processed_df, top_n=5, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -591,7 +591,7 @@ def viz_coatcolor(home_dir, processed_df, top_n=5):
     max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
     # Set up the matplotlib figure
     plt.figure(figsize=(14, 6))
-    plt.suptitle('White, Black, and Brown are most common coat colors for both Cats and Dogs.', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     # Create a subplot for Cats
     ax1 = plt.subplot(1, 2, 1)
     sns.countplot(x='CoatColor', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
@@ -658,7 +658,7 @@ def get_top_coat_pattern(df, animal_type, AnimalID=r"AnimalID", top_n=5):
     # Get the index (coat pattern) of the top n most common coat pattern
     top_coat_colors = coat_pattern_counts.index.tolist()
     return top_coat_colors, coat_pattern_counts, total_counts, missing
-def viz_coatpattern(home_dir, processed_df, top_n=5):
+def viz_coatpattern(home_dir, processed_df, top_n=5, chart_title="Enter Chart Title"):
     # import required modules
     sys.path.append(home_dir + r"/src")
     import utils
@@ -669,7 +669,7 @@ def viz_coatpattern(home_dir, processed_df, top_n=5):
     max_count = ((max(cat_counts.max(), dog_counts.max()) // 1000) + 1) * 1000
     # Set up the matplotlib figure
     plt.figure(figsize=(14, 6))
-    plt.suptitle('Most cats are Tabby, while most dogs have Brindle pattern coats.', fontsize=18)
+    plt.suptitle(chart_title, fontsize=18)
     # Create a subplot for Cats
     ax1 = plt.subplot(1, 2, 1)
     sns.countplot(x='CoatPattern', data=processed_df[processed_df['AnimalType'] == 'Cat'], order=top_cats)
