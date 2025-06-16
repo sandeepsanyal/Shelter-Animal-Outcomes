@@ -11,16 +11,11 @@ def load_data(
     """
     Load a dataset from a CSV file located in the specified directory.
 
-    This function constructs the full path to a CSV file using the provided 
-    home directory and data file name. It then reads the CSV into a pandas 
-    DataFrame and returns it for further processing or analysis.
+    This function constructs the full path to a CSV file using the provided home directory and data file name. It then reads the CSV into a pandas DataFrame and returns it for further processing or analysis.
 
     Parameters:
-    home_dir (str): The base directory where the `data` subdirectory is located.
-                    This should be an absolute or relative path to ensure proper 
-                    navigation within the filesystem.
-    data_file (str): The name of the CSV file to load, excluding the `.csv` extension.
-                     It assumes that the actual file has a `.csv` extension appended.
+    home_dir (str): The base directory where the `data` subdirectory is located.This should be an absolute or relative path to ensure proper navigation within the filesystem.
+    data_file (str): The name of the CSV file to load, excluding the `.csv` extension. It assumes that the actual file has a `.csv` extension appended.
 
     Returns:
     pd.DataFrame: A pandas DataFrame containing the contents of the loaded CSV file.
@@ -34,10 +29,8 @@ def load_data(
         data_frame = load_data('/path/to/home', 'dataset_name')
 
     Notes:
-    - Ensure that the `home_dir` leads to an existing directory and contains 
-      a subdirectory named `data`.
-    - The function assumes that files have no spaces in their names other than
-      those explicitly included as part of `data_file`.
+    - Ensure that the `home_dir` leads to an existing directory and contains a subdirectory named `data`.
+    - The function assumes that files have no spaces in their names other than those explicitly included as part of `data_file`.
     """
 
     data = pd.read_csv(home_dir + r"/data/" + data_file + r".csv")
@@ -70,20 +63,15 @@ def convert_to_days(age_str) -> int:
     """
     Converts an age string with specified units into the equivalent number of days.
 
-    This function takes a string representing an age (e.g., "2 years", "3 months") and converts it 
-    into an integer value representing the number of days. It handles various time units including
-    years, months, weeks, and days. The conversion uses approximate average lengths for each unit.
+    This function takes a string representing an age (e.g., "2 years", "3 months") and converts it into an integer value representing the number of days. It handles various time units including years, months, weeks, and days. The conversion uses approximate average lengths for each unit.
     
     Parameters:
-    age_str (str or pd.NA): A string containing a numeric value followed by a time unit ('years', 
-                            'months', 'weeks', or 'days'). If the input is NaN or does not match
-                            the expected format, None will be returned.
+    age_str (str or pd.NA): A string containing a numeric value followed by a time unit ('years', 'months', 'weeks', or 'days'). If the input is NaN or does not match the expected format, None will be returned.
 
     Returns:
-    int or None: The number of days corresponding to the provided age string if it matches the expected
-                 format. Possible return values include:
-                 - An integer representing the equivalent days for valid inputs.
-                 - None if the input is NaN, does not match the pattern, or has an unsupported unit.
+    int or None: The number of days corresponding to the provided age string if it matches the expected format. Possible return values include:
+        - An integer representing the equivalent days for valid inputs.
+        - None if the input is NaN, does not match the pattern, or has an unsupported unit.
 
     Example usage:
     >>> convert_to_days("2 years")
@@ -94,10 +82,8 @@ def convert_to_days(age_str) -> int:
     None
 
     Notes:
-    - This function uses regular expressions to parse the input string and extract numeric values 
-      along with their units.
-    - The conversion approximates one year as 365 days, one month as 30 days, one week as 7 days,
-      and treats 'day' literally as 1 day.
+    - This function uses regular expressions to parse the input string and extract numeric values along with their units.
+    - The conversion approximates one year as 365 days, one month as 30 days, one week as 7 days, and treats 'day' literally as 1 day.
     - It is case-insensitive for unit names (e.g., "Years", "months" are both valid).
     - Ensure that the input string is correctly formatted; otherwise, the function will return None.
 
@@ -130,24 +116,22 @@ def group_age(age) -> str:
     """
     Categorizes an age into predefined groups based on its value.
 
-    This function takes an age value (either as a number or NaN) and returns a string representing the 
-    age category that the input falls into. It is designed to handle both numeric ages and missing values.
+    This function takes an age value (either as a number or NaN) and returns a string representing the age category that the input falls into. It is designed to handle both numeric ages and missing values.
     
     Parameters:
-    age (int, float, pd.NA): The age of an individual which can be a number or a pandas NA value (NaN). 
-                             If the age is not provided or is NaN, it will return None.
+    age (int, float, pd.NA): The age of an individual which can be a number or a pandas NA value (NaN). If the age is not provided or is NaN, it will return None.
 
     Returns:
     str or None: A string representing the age category if the input is valid. Possible outputs are:
-                 - '<1 week' for ages less than 7 days
-                 - '<1 month' for ages between 7 and 29 days (inclusive)
-                 - '<6 months' for ages between 30 and 179 days (inclusive)
-                 - '<1 year' for ages between 180 and 364 days (inclusive)
-                 - '<5 years' for ages between 365 and 1824 days (inclusive)
-                 - '<10 years' for ages between 1825 and 3649 days (inclusive)
-                 - '<15 years' for ages between 3650 and 5474 days (inclusive)
-                 - '15+ years' for ages of 5475 days or more
-                 If the input age is NaN, returns None.
+        - '<1 week' for ages less than 7 days
+        - '<1 month' for ages between 7 and 29 days (inclusive)
+        - '<6 months' for ages between 30 and 179 days (inclusive)
+        - '<1 year' for ages between 180 and 364 days (inclusive)
+        - '<5 years' for ages between 365 and 1824 days (inclusive)
+        - '<10 years' for ages between 1825 and 3649 days (inclusive)
+        - '<15 years' for ages between 3650 and 5474 days (inclusive)
+        - '15+ years' for ages of 5475 days or more
+        - If the input age is NaN, returns None.
 
     Example usage:
     >>> group_age(10)
@@ -189,9 +173,7 @@ def process_breed_data(
     """
     Processes and standardizes breed data from an animal dataset.
 
-    This function performs several transformations on the 'Breed' column of the input DataFrame to ensure consistency,
-    handle mixed breeds appropriately, and categorize each breed into predefined groups. The resulting DataFrames 
-    provide detailed insights into breed information and mix statuses for further analysis or reporting.
+    This function performs several transformations on the 'Breed' column of the input DataFrame to ensure consistency, handle mixed breeds appropriately, and categorize each breed into predefined groups. The resulting DataFrames provide detailed insights into breed information and mix statuses for further analysis or reporting.
 
     Parameters:
     df (pandas.DataFrame): A DataFrame containing animal data with at least 'Breed' and a column specified by AnimalID.
@@ -200,25 +182,22 @@ def process_breed_data(
     Returns:
     tuple: A tuple containing three DataFrames:
         - df (pandas.DataFrame): The modified input DataFrame with updated 'Breed' and 'Mix' columns.
-        - breed (pandas.DataFrame): A new DataFrame detailing each animal's breeds, including separated mixed breeds 
-          and their types categorized by dog breed group.
+        - breed (pandas.DataFrame): A new DataFrame detailing each animal's breeds, including separated mixed breeds and their types categorized by dog breed group.
         - breed_mix (pandas.DataFrame): A DataFrame showing the original 'Breed' column values alongside the 'Mix' status.
 
     The function performs the following operations:
     1. Standardizes text in the 'Breed' column using regular expressions to handle spaces, unknowns, and specific terms.
     2. Splits breeds containing 'Mix', creating a new 'Mix' column indicating mixed breed status.
     3. Separates multiple breeds listed in the same entry of the 'Breed' column into individual rows.
-    4. Maps each breed to its respective type (e.g., Terrier, Working) using a predefined dictionary and assigns 
-       an 'Unknown' category if no match is found.
+    4. Maps each breed to its respective type (e.g., Terrier, Working) using a predefined dictionary and assigns an 'Unknown' category if no match is found.
     5. Calculates the frequency of each animal's occurrence in the breed data and updates the 'Mix' status based on these counts.
     6. Ensures that breeds are properly categorized and mixed status is accurately reflected across all related DataFrames.
 
     Example usage:
-        updated_df, detailed_breed_info, mix_status = process_breed_data(animal_data)
+    updated_df, detailed_breed_info, mix_status = process_breed_data(animal_data)
 
     Notes:
-    - The function handles mixed breeds by splitting them into individual components for processing
-      before recombining them. This is particularly useful for accurate breed categorization.
+    - The function handles mixed breeds by splitting them into individual components for processing before recombining them. This is particularly useful for accurate breed categorization.
     """
 
     # For dog breeds
@@ -339,13 +318,10 @@ def replace_colors(row: pd.Series) -> str:
     Modify color names based on predefined rules and mappings.
 
     This function processes a single row from a DataFrame containing animal records.
-    It adjusts the 'Color' attribute according to the animal type ('Dog', 'Cat') 
-    and applies specific transformations for consistency in color naming.
+    It adjusts the 'Color' attribute according to the animal type ('Dog', 'Cat') and applies specific transformations for consistency in color naming.
 
     Parameters:
-    - row (pandas.Series): A pandas Series representing a single record with at least
-      two columns: 'AnimalType' and 'Color'. 'AnimalType' indicates whether the animal is a 'Dog' or 'Cat', 
-      and 'Color' describes one or more colors associated with the animal.
+    - row (pandas.Series): A pandas Series representing a single record with at least two columns: 'AnimalType' and 'Color'. 'AnimalType' indicates whether the animal is a 'Dog' or 'Cat', and 'Color' describes one or more colors associated with the animal.
 
     Returns:
     - str: The modified color name. If no applicable changes are found, returns the original color string.
@@ -382,9 +358,7 @@ def extract_coat_pattern(
     """
     Extracts and returns the coat pattern from a given color string.
 
-    This function scans through a provided color description to identify if it contains any predefined coat patterns.
-    If found, it returns the first matching pattern. The search is case-insensitive. 
-    If no patterns are detected, it returns NaN (Not a Number).
+    This function scans through a provided color description to identify if it contains any predefined coat patterns. If found, it returns the first matching pattern. The search is case-insensitive. If no patterns are detected, it returns NaN (Not a Number).
 
     Parameters:
     - color_str (str): A string describing the color and potentially the coat pattern of an animal.
@@ -410,22 +384,17 @@ def process_coat_colors(
     """
     Processes the coat color and pattern information from animal data.
 
-    This function handles the cleaning and extraction of coat colors and patterns 
-    from an input DataFrame. It removes unwanted spaces, standardizes color names,
-    extracts specific coat patterns, and restructures the data to provide detailed insights into
-    each animal's coat characteristics. The processed data is then split into separate DataFrames for further use.
+    This function handles the cleaning and extraction of coat colors and patterns from an input DataFrame. It removes unwanted spaces, standardizes color names, extracts specific coat patterns, and restructures the data to provide detailed insights into each animal's coat characteristics. The processed data is then split into separate DataFrames for further use.
 
     Parameters:
-    - df (pd.DataFrame): Input DataFrame containing the animal dataset with a 'Color' column 
-                         and an identifier specified by AnimalID.
-    - AnimalID (str, optional): The name of the column in `df` that uniquely identifies each animal. 
-                                Defaults to "AnimalID".
+    - df (pd.DataFrame): Input DataFrame containing the animal dataset with a 'Color' column and an identifier specified by AnimalID.
+    - AnimalID (str, optional): The name of the column in `df` that uniquely identifies each animal. Defaults to "AnimalID".
 
     Returns:
     - tuple: A tuple containing multiple DataFrames representing different aspects of coat data.
-      1. df (pd.DataFrame): The original DataFrame passed as input with potential modifications.
-      2. coat_color (pd.DataFrame): DataFrame containing detailed information about each animal's coat colors.
-      3. coat_patterns (pd.DataFrame): DataFrame listing the identified coat patterns for each animal.
+        1. df (pd.DataFrame): The original DataFrame passed as input with potential modifications.
+        2. coat_color (pd.DataFrame): DataFrame containing detailed information about each animal's coat colors.
+        3. coat_patterns (pd.DataFrame): DataFrame listing the identified coat patterns for each animal.
 
     Processing Steps:
     1. Space Removal: Cleans the 'Color' column by removing multiple spaces between words.
@@ -436,7 +405,7 @@ def process_coat_colors(
     6. List Separation: Splits combined coat colors separated by '/' and creates individual rows for each color.
 
     Example usage:
-        updated_df, coat_color, coat_patterns = process_coat_colors(animal_data)
+    updated_df, coat_color, coat_patterns = process_coat_colors(animal_data)
 
     Notes:
     - The function assumes that helper functions `replace_colors` and `extract_coat_pattern` are defined elsewhere.
@@ -494,45 +463,32 @@ def preprocess_data(
     """
     Preprocesses animal data to clean and organize key attributes.
 
-    This function performs several preprocessing steps on the input DataFrame 
-    to handle various aspects of animal data such as age, sex, breed, and coat color. 
-    The transformations include cleaning text fields, converting age representations into days,
-    splitting columns for detailed categorization, and merging processed data back into a comprehensive DataFrame.
+    This function performs several preprocessing steps on the input DataFrame to handle various aspects of animal data such as age, sex, breed, and coat color. The transformations include cleaning text fields, converting age representations into days, splitting columns for detailed categorization, and merging processed data back into a comprehensive DataFrame.
 
     Parameters:
-    - df (pd.DataFrame): Input DataFrame containing the animal dataset with required columns.
-                         Expected columns include 'AgeuponOutcome', 'SexuponOutcome', 
-                         'AnimalType', and optionally 'OutcomeType'.
-    - AnimalID (str, optional): The name of the column in `df` that uniquely identifies each animal. 
-                                Defaults to "AnimalID".
-    - dep_var (str, optional): The name of the dependent variable column, which is the target for prediction.
-                               Defaults to 'OutcomeType'.
+    - df (pd.DataFrame): Input DataFrame containing the animal dataset with required columns.Expected columns include 'AgeuponOutcome', 'SexuponOutcome', 'AnimalType', and optionally 'OutcomeType'.
+    - AnimalID (str, optional): The name of the column in `df` that uniquely identifies each animal. Defaults to "AnimalID".
+    - dep_var (str, optional): The name of the dependent variable column, which is the target for prediction. Defaults to 'OutcomeType'.
 
     Returns:
     - tuple: A tuple containing multiple DataFrames representing different aspects of processed data.
-      1. df (pd.DataFrame): Merged DataFrame including cleaned and organized attributes.
-      2. animal_data (pd.DataFrame): Subset of the original data with key columns after initial cleaning.
-      3. breed (pd.DataFrame): Processed data related to the breeds of animals.
-      4. breed_mix (pd.DataFrame): Additional processed data for mixed/ pure breeds.
-      5. coat_color (pd.DataFrame): Data containing information about animals' coat colors.
-      6. coat_patterns (pd.DataFrame): Data detailing patterns found in animals' coats.
+        1. df (pd.DataFrame): Merged DataFrame including cleaned and organized attributes.
+        2. animal_data (pd.DataFrame): Subset of the original data with key columns after initial cleaning.
+        3. breed (pd.DataFrame): Processed data related to the breeds of animals.
+        4. breed_mix (pd.DataFrame): Additional processed data for mixed/ pure breeds.
+        5. coat_color (pd.DataFrame): Data containing information about animals' coat colors.
+        6. coat_patterns (pd.DataFrame): Data detailing patterns found in animals' coats.
 
     Processing Steps:
-    1. Age Preprocessing: Cleans the 'AgeuponOutcome' column, converts age to days,
-       and groups ages into categories.
-    2. Sex Preprocessing: Cleans the 'SexuponOutcome' column by removing unwanted spaces 
-       and unknown values, then splits it into two columns for detailed categorization.
-    3. Breed Processing: Utilizes an external function `process_breed_data` to handle
-       breed-specific data transformations.
-    4. Coat Processing: Uses another function `process_coat_colors` to manage coat color 
-       information and patterns.
+    1. Age Preprocessing: Cleans the 'AgeuponOutcome' column, converts age to days, and groups ages into categories.
+    2. Sex Preprocessing: Cleans the 'SexuponOutcome' column by removing unwanted spaces and unknown values, then splits it into two columns for detailed categorization.
+    3. Breed Processing: Utilizes an external function `process_breed_data` to handle breed-specific data transformations.
+    4. Coat Processing: Uses another function `process_coat_colors` to manage coat color information and patterns.
     5. Data Merging: Merges all processed components into a single comprehensive DataFrame.
 
     Notes:
-    - This function assumes the input DataFrame has specific columns like 'AnimalID', 'Breed',
-    and 'Color'. If your dataset differs, you may need to adjust column names accordingly.
-    - The function assumes that the helper functions `convert_to_days`, `group_age`, 
-      `process_breed_data`, and `process_coat_colors` are defined elsewhere in your codebase.
+    - This function assumes the input DataFrame has specific columns like 'AnimalID', 'Breed', and 'Color'. If your dataset differs, you may need to adjust column names accordingly.
+    - The function assumes that the helper functions `convert_to_days`, `group_age`, `process_breed_data`, and `process_coat_colors` are defined elsewhere in your codebase.
     """
 
     # Dependent Variable
@@ -631,34 +587,24 @@ def process_data(
     dep_var="OutcomeType"
 ) -> pd.DataFrame:
     """
-    Processes data from a specified file path by loading, preprocessing, 
-    and encoding categorical variables in sequence to prepare it for analysis or modeling.
+    Processes data from a specified file path by loading, preprocessing, and encoding categorical variables in sequence to prepare it for analysis or modeling.
 
     The function performs the following steps:
-    1. Loads the data from the given file path. Ensure the file at `file_path` is accessible
-       and in CSV format.
-    2. Preprocesses the loaded DataFrame using specific rules (e.g., handling missing values,
-       feature engineering) with an optional column name for AnimalID.
-    3. Encodes categorical variables within the DataFrame into numeric codes and dummy 
-       variables where appropriate.
+    1. Loads the data from the given file path. Ensure the file at `file_path` is accessible and in CSV format.
+    2. Preprocesses the loaded DataFrame using specific rules (e.g., handling missing values, feature engineering) with an optional column name for AnimalID.
+    3. Encodes categorical variables within the DataFrame into numeric codes and dummy variables where appropriate.
 
     Parameters:
-    - home_dir (str): The base directory where the `data` subdirectory is located.
-                      This should be an absolute or relative path to ensure proper 
-                      navigation within the filesystem.
-    - data_file (str): The name of the CSV file to load, excluding the `.csv` extension.
-                       It assumes that the actual file has a `.csv` extension appended.
-    - AnimalID (str, optional): The name of the column in the DataFrame used as an identifier
-                                for individual animals. Defaults to "AnimalID".
-    - dep_var (str, optional): The name of the dependent variable column, which is the target
-                               for prediction. Defaults to 'OutcomeType'.
+    - home_dir (str): The base directory where the `data` subdirectory is located. This should be an absolute or relative path to ensure proper navigation within the filesystem.
+    - data_file (str): The name of the CSV file to load, excluding the `.csv` extension. It assumes that the actual file has a `.csv` extension appended.
+    - AnimalID (str, optional): The name of the column in the DataFrame used as an identifier for individual animals. Defaults to "AnimalID".
+    - dep_var (str, optional): The name of the dependent variable column, which is the target for prediction. Defaults to 'OutcomeType'.
 
     Returns:
-    pandas.DataFrame: A processed DataFrame with loaded data that has been preprocessed and 
-                      encoded appropriately.
+    pandas.DataFrame: A processed DataFrame with loaded data that has been preprocessed and encoded appropriately.
 
     Example usage:
-        >>> processed_df = process_data("path/to/your/data.csv", AnimalID="UniqueID")
+    processed_df = process_data("path/to/your/data.csv", AnimalID="UniqueID")
     """
 
     # Load data from the specified file path
