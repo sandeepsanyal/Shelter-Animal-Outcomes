@@ -1,45 +1,44 @@
-import sys
 import numpy as np
 import pandas as pd
 import re
 
 
 def load_data(
-    home_dir: str,
-    data_file: str
+    raw_data_path: str,
+    dep_var: str = r"OutcomeType"
 ) -> pd.DataFrame:
     """
-    Load a dataset from a CSV file located in the specified directory.
+    Load and preprocess a dataset from a CSV file.
 
-    This function constructs the full path to a CSV file using the provided home directory and data file name. It then reads the CSV into a pandas DataFrame and returns it for further processing or analysis.
+    This function reads a CSV file into a pandas DataFrame, renames specific columns for consistency,
+    removes duplicate entries, and filters the data based on predefined categories for 'AnimalType'
+    and the dependent variable.
 
     Parameters:
-    home_dir (str): The base directory where the `data` subdirectory is located.This should be an absolute or relative path to ensure proper navigation within the filesystem.
-    data_file (str): The name of the CSV file to load, excluding the `.csv` extension. It assumes that the actual file has a `.csv` extension appended.
+    raw_data_path (str): The full path to the CSV file to be loaded.
+    dep_var (str, optional): The name of the dependent variable column used for prediction. Defaults to 'OutcomeType'.
 
     Returns:
-    pd.DataFrame: A pandas DataFrame containing the contents of the loaded CSV file.
+    pd.DataFrame: A cleaned and filtered pandas DataFrame containing the dataset.
 
     Raises:
-    FileNotFoundError: If the specified CSV file does not exist at the constructed path.
-    pd.errors.EmptyDataError: If the file is empty.
-    pd.errors.ParserError: If there are issues parsing the file as a CSV.
+    - FileNotFoundError: If the specified CSV file does not exist at the given path.
+    - pd.errors.EmptyDataError: If the file is empty.
+    - pd.errors.ParserError: If there is an issue parsing the CSV file.
 
-    Example Usage:
-        data_frame = load_data('/path/to/home', 'dataset_name')
+    Example:
+    data = load_data('/path/to/data.csv')
 
     Notes:
-    - Ensure that the `home_dir` leads to an existing directory and contains a subdirectory named `data`.
-    - The function assumes that files have no spaces in their names other than those explicitly included as part of `data_file`.
+    - The function assumes the CSV file has no spaces in the filename other than those included in the path.
+    - The 'AnimalType' column is filtered to include only 'Cat' and 'Dog'.
+    - The dependent variable is filtered to include only ['Adoption', 'Euthanasia', 'Transfer', 'Return to Owner', 'Died'].
     """
-
-    data = pd.read_csv(home_dir + r"/data/" + data_file + r".csv")
+    data = pd.read_csv(raw_data_path)
 
     data.rename(
         columns={
-            "Animal ID": "AnimalID",
             "Date of Birth": "DateOfBirth",
-            "Outcome Type": "OutcomeType",
             "Outcome Subtype": "OutcomeSubtype",
             "Animal Type": "AnimalType",
             "Sex upon Outcome": "SexuponOutcome",
@@ -47,13 +46,12 @@ def load_data(
         },
         inplace=True
     )
-    data = data.drop_duplicates()
+    data.drop_duplicates(inplace=True)
     data = data[
         (data["AnimalType"].isin(["Cat", "Dog"])) &
-        (data["OutcomeType"].isin(['Adoption', 'Euthanasia', 'Transfer', 'Return to Owner', 'Died']))
+        (data[dep_var].isin(['Adoption', 'Euthanasia', 'Transfer', 'Return to Owner', 'Died']))
     ]
-    data = data.reset_index(drop=True)
-
+    data.reset_index(drop=True, inplace=True)
 
     return data
 
@@ -100,9 +98,9 @@ def convert_to_days(age_str) -> int:
 
     # Convert the units to days
     if 'year' in unit:
-        return number * 365 # Approximate year length as 365 days
+        return number * 365  # Approximate year length as 365 days
     elif 'month' in unit:
-        return number * 30  # Approximate month length as 30 days
+        return number * 30   # Approximate month length as 30 days
     elif 'week' in unit:
         return number * 7
     elif 'day' in unit:
@@ -111,7 +109,6 @@ def convert_to_days(age_str) -> int:
     return None
 
 
-# Group 'AgeuponOutcome' into categories based on the number of days as follows:
 def group_age(age) -> str:
     """
     Categorizes an age into predefined groups based on its value.
@@ -135,9 +132,9 @@ def group_age(age) -> str:
 
     Example usage:
     >>> group_age(10)
-    '<1 week'
-    >>> group_age(45)
     '<1 month'
+    >>> group_age(45)
+    '<6 months'
     >>> group_age(pd.NA)
     None
 
@@ -235,7 +232,7 @@ def process_breed_data(
         df['Breed'] = df['Breed'].str.replace(pattern, repl, regex=True, flags=re.IGNORECASE).str.strip()
 
     # split the column into two columns
-    df['Mix'] = ["Mix" if "Mix" in df.loc[i, 'Breed'] else np.nan for i in range(df.shape[0])]
+    df['Mix'] = df['Breed'].str.contains('Mix', case=False).astype(float)
     df['Breed'] = df['Breed'].str.split(' Mix').str[0]
     # replace rows containing 'Mix' with nan in "Breed" column
     df['Breed'] = df['Breed'].str.replace(r'^Mix$', '', regex=True, flags=re.IGNORECASE).replace('', np.nan)
@@ -286,7 +283,7 @@ def process_breed_data(
     ## Merge the frequency counts back into the original dataframe
     df = pd.merge(
         left=df,
-        right=breed_freq,
+        right=breed_freq.rename(columns={"index": AnimalID}),
         left_on=AnimalID,
         right_on=AnimalID,
         how='left'
@@ -295,10 +292,6 @@ def process_breed_data(
     df.loc[df['count'] > 1, 'Mix'] = 'Mix'
     ## Assign 'Pure breed' or keep NaN based on the presence of a Breed entry
     df['Mix'] = df['Mix'].fillna(value='Pure breed')
-    # df.loc[
-    #     (df['count'] == 1) & df['Breed'].notna(),
-    #     'Mix'
-    # ] = 'Pure breed'
     ## Clean up by dropping the auxiliary frequency column
     df.drop(columns=['count'], inplace=True)
     del breed_freq
@@ -353,7 +346,7 @@ def replace_colors(row: pd.Series) -> str:
 
 def extract_coat_pattern(
     color_str: str,
-    coat_patterns: str
+    coat_patterns: list
 ) -> str:
     """
     Extracts and returns the coat pattern from a given color string.
@@ -362,24 +355,26 @@ def extract_coat_pattern(
 
     Parameters:
     - color_str (str): A string describing the color and potentially the coat pattern of an animal.
+    - coat_patterns (list): A list of predefined coat patterns to look for within the color string.
 
     Returns:
-    - str or np.nan: The name of the first matching coat pattern if found; otherwise, returns np.nan.
+    - str: The name of the first matching coat pattern if found; otherwise, returns "".
 
     Notes:
     - The function utilizes the `re` module from Python's standard library for regular expression operations.
-    - It returns a NumPy NaN value when no patterns are matched, which can be useful in data processing and analysis workflows.
+    - It returns an empty string when no patterns are matched, which can be useful in data processing and analysis workflows.
     """
 
-    for pattern in coat_patterns:
-        if re.search(pattern, color_str, re.IGNORECASE):
+    for pattern in coat_patterns:  # Fix indentation
+        if re.search(pattern, color_str, re.IGNORECASE):  # Add missing 'color_str' variable
             return pattern
-    return np.nan
+        else:
+            return ""
 
 
 def process_coat_colors(
     df: pd.DataFrame,
-    AnimalID="AnimalID"
+    AnimalID: str=r"AnimalID"
 ) -> tuple:
     """
     Processes the coat color and pattern information from animal data.
@@ -457,8 +452,8 @@ def process_coat_colors(
 
 def preprocess_data(
     df: pd.DataFrame,
-    AnimalID="AnimalID",
-    dep_var="OutcomeType"
+    AnimalID: str=r"AnimalID",
+    dep_var: str=r"OutcomeType"
 ) -> tuple:
     """
     Preprocesses animal data to clean and organize key attributes.
@@ -537,7 +532,7 @@ def preprocess_data(
 
 
     # Breed of animals
-    df, breed, breed_mix = process_breed_data(df, AnimalID=AnimalID)    
+    df, breed, breed_mix = process_breed_data(df, AnimalID=AnimalID)
 
 
     # Coat of animals
@@ -581,34 +576,31 @@ def preprocess_data(
 
 
 def process_data(
-    home_dir: str,
-    data_file: str,
-    AnimalID="AnimalID",
-    dep_var="OutcomeType"
+    raw_data_path: str,
+    AnimalID: str="AnimalID",
+    dep_var:str ="OutcomeType"
 ) -> pd.DataFrame:
     """
     Processes data from a specified file path by loading, preprocessing, and encoding categorical variables in sequence to prepare it for analysis or modeling.
 
     The function performs the following steps:
     1. Loads the data from the given file path. Ensure the file at `file_path` is accessible and in CSV format.
-    2. Preprocesses the loaded DataFrame using specific rules (e.g., handling missing values, feature engineering) with an optional column name for AnimalID.
-    3. Encodes categorical variables within the DataFrame into numeric codes and dummy variables where appropriate.
+    2. Preprocesses the loaded DataFrame using specific rules.
 
     Parameters:
-    - home_dir (str): The base directory where the `data` subdirectory is located. This should be an absolute or relative path to ensure proper navigation within the filesystem.
     - data_file (str): The name of the CSV file to load, excluding the `.csv` extension. It assumes that the actual file has a `.csv` extension appended.
     - AnimalID (str, optional): The name of the column in the DataFrame used as an identifier for individual animals. Defaults to "AnimalID".
     - dep_var (str, optional): The name of the dependent variable column, which is the target for prediction. Defaults to 'OutcomeType'.
 
     Returns:
-    pandas.DataFrame: A processed DataFrame with loaded data that has been preprocessed and encoded appropriately.
+    pandas.DataFrame: A processed DataFrame with loaded data that has been preprocessed.
 
     Example usage:
     processed_df = process_data("path/to/your/data.csv", AnimalID="UniqueID")
     """
 
     # Load data from the specified file path
-    df = load_data(home_dir=home_dir, data_file=data_file)
+    df = load_data(raw_data_path=raw_data_path, dep_var=dep_var)
     
     # Return preprocessed dataFrames
     return preprocess_data(df=df, AnimalID=AnimalID, dep_var=dep_var)
