@@ -8,3 +8,6 @@
 /python_script.py
 /report.pbix
 /pyvenv
+/data/*.csv
+/data/*.xlsx
+/data/*.json

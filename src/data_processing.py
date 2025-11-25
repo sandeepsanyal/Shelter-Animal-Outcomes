@@ -38,6 +38,7 @@ def load_data(
 
     data.rename(
         columns={
+            "Outcome Type": "OutcomeType",
             "Date of Birth": "DateOfBirth",
             "Outcome Subtype": "OutcomeSubtype",
             "Animal Type": "AnimalType",
